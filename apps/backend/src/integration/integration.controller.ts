@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
-import { Response } from 'express';
+import type { Response } from 'express';
 import { IntegrationService } from './integration.service';
 import { FacebookOAuthService } from './services/facebook-oauth.service';
 import { TikTokOAuthService } from './services/tiktok-oauth.service';

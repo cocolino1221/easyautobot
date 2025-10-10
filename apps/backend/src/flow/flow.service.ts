@@ -223,7 +223,7 @@ export class FlowService {
         tenantId: context.tenantId,
         integrationId: context.triggerData.integrationId || 'demo-integration',
         platform: context.triggerData.platform || 'FACEBOOK',
-        direction: 'OUTGOING',
+        direction: 'OUTBOUND',
         status: 'SENT',
         type: 'TEXT',
         content: actionData.message || 'Auto-generated message',
