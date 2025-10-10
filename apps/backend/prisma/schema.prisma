@@ -1,0 +1,322 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  OWNER
+  ADMIN
+  AGENT
+  VIEWER
+}
+
+enum SubscriptionPlan {
+  FREE
+  PRO
+  BUSINESS
+  AGENCY
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  TRIALING
+}
+
+enum IntegrationType {
+  FACEBOOK
+  INSTAGRAM
+  WHATSAPP
+  TIKTOK
+}
+
+enum IntegrationStatus {
+  CONNECTED
+  DISCONNECTED
+  ERROR
+  PENDING
+}
+
+enum ConversationStatus {
+  OPEN
+  CLOSED
+  SNOOZED
+}
+
+enum MessageDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum MessageStatus {
+  PENDING
+  SENT
+  DELIVERED
+  READ
+  FAILED
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  VIDEO
+  AUDIO
+  FILE
+  TEMPLATE
+  CAROUSEL
+  STORY_REPLY
+  STORY_MENTION
+}
+
+enum FlowStatus {
+  ACTIVE
+  INACTIVE
+  DRAFT
+}
+
+model Tenant {
+  id                   String             @id @default(uuid())
+  name                 String
+  plan                 SubscriptionPlan   @default(FREE)
+  status               SubscriptionStatus @default(ACTIVE)
+  stripeCustomerId     String?            @unique
+  stripeSubscriptionId String?            @unique
+  currentPeriodEnd     DateTime?
+
+  // Limits
+  maxIntegrations      Int                @default(1)
+  maxMessagesPerMonth  Int                @default(50)
+  maxTeamMembers       Int                @default(1)
+  maxFlows             Int                @default(1)
+
+  // Usage tracking
+  messagesThisMonth    Int                @default(0)
+  lastMessageReset     DateTime           @default(now())
+
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  // Relations
+  users                User[]
+  integrations         Integration[]
+  conversations        Conversation[]
+  messages             Message[]
+  flows                Flow[]
+
+  @@map("tenants")
+}
+
+model User {
+  id                String   @id @default(uuid())
+  clerkId           String?  @unique
+  email             String   @unique
+  name              String?
+  password          String?
+  role              UserRole @default(AGENT)
+  avatarUrl         String?
+
+  tenantId          String
+  tenant            Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  assignedConversations Conversation[]
+
+  @@index([tenantId])
+  @@index([clerkId])
+  @@map("users")
+}
+
+model Integration {
+  id              String            @id @default(uuid())
+  tenantId        String
+  tenant          Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  type            IntegrationType
+  status          IntegrationStatus @default(PENDING)
+  accountId       String
+  accountName     String
+
+  accessToken     String
+  refreshToken    String?
+  tokenExpiresAt  DateTime?
+
+  metadata        Json?
+  webhookSecret   String?
+
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  // Relations
+  conversations   Conversation[]
+  messages        Message[]
+
+  @@unique([tenantId, type, accountId])
+  @@index([tenantId])
+  @@index([type])
+  @@map("integrations")
+}
+
+model Conversation {
+  id                  String              @id @default(uuid())
+  tenantId            String
+  tenant              Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  integrationId       String
+  integration         Integration         @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+
+  platform            IntegrationType
+  status              ConversationStatus  @default(OPEN)
+
+  participantId       String
+  participantName     String?
+  participantUsername String?
+  participantAvatar   String?
+
+  lastMessageAt       DateTime            @default(now())
+  lastMessagePreview  String?
+  unreadCount         Int                 @default(0)
+
+  tags                String[]            @default([])
+
+  assignedToUserId    String?
+  assignedTo          User?               @relation(fields: [assignedToUserId], references: [id], onDelete: SetNull)
+
+  metadata            Json?
+
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  // Relations
+  messages            Message[]
+
+  @@unique([integrationId, participantId])
+  @@index([tenantId])
+  @@index([status])
+  @@index([assignedToUserId])
+  @@map("conversations")
+}
+
+model Message {
+  id              String           @id @default(uuid())
+  conversationId  String
+  conversation    Conversation     @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  tenantId        String
+  tenant          Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  integrationId   String
+  integration     Integration      @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+
+  platform        IntegrationType
+  direction       MessageDirection
+  status          MessageStatus    @default(PENDING)
+  type            MessageType      @default(TEXT)
+
+  content         String
+  mediaUrl        String?
+  metadata        Json?
+
+  externalId      String
+  senderId        String
+  recipientId     String
+
+  timestamp       DateTime         @default(now())
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@unique([integrationId, externalId])
+  @@index([conversationId])
+  @@index([tenantId])
+  @@index([direction])
+  @@index([timestamp])
+  @@map("messages")
+}
+
+model Flow {
+  id          String      @id @default(uuid())
+  tenantId    String
+  tenant      Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  name        String
+  description String?
+  status      FlowStatus  @default(DRAFT)
+
+  trigger     Json
+  nodes       Json
+  edges       Json
+
+  // Statistics
+  totalRuns      Int      @default(0)
+  successfulRuns Int      @default(0)
+  failedRuns     Int      @default(0)
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relations
+  executions  FlowExecution[]
+
+  @@index([tenantId])
+  @@index([status])
+  @@map("flows")
+}
+
+model FlowExecution {
+  id         String   @id @default(uuid())
+  flowId     String
+  flow       Flow     @relation(fields: [flowId], references: [id], onDelete: Cascade)
+
+  status     String
+  input      Json
+  output     Json?
+  error      String?
+
+  startedAt  DateTime @default(now())
+  completedAt DateTime?
+
+  @@index([flowId])
+  @@index([startedAt])
+  @@map("flow_executions")
+}
+
+model ApiKey {
+  id        String   @id @default(uuid())
+  tenantId  String
+
+  name      String
+  key       String   @unique
+  lastUsed  DateTime?
+
+  createdAt DateTime @default(now())
+  expiresAt DateTime?
+
+  @@index([tenantId])
+  @@map("api_keys")
+}
+
+model Webhook {
+  id        String   @id @default(uuid())
+  tenantId  String
+
+  url       String
+  events    String[]
+  secret    String
+  active    Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@map("webhooks")
+}
