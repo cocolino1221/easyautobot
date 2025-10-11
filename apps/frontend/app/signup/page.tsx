@@ -52,9 +52,10 @@ export default function SignUpPage() {
         }
       }
 
-      // Store token
+      // Store token in both localStorage and cookie
       localStorage.setItem('access_token', data.access_token);
       localStorage.setItem('user', JSON.stringify(data.user));
+      document.cookie = `access_token=${data.access_token}; path=/; max-age=604800; samesite=strict`;
 
       router.push('/dashboard');
     } catch (err: any) {
