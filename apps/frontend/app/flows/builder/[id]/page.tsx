@@ -437,14 +437,16 @@ export default function FlowBuilderPage() {
 
   const onNodesDelete = useCallback(
     (deleted: Node[]) => {
-      setNodes((nds) => nds.filter((node) => !deleted.find((d) => d.id === node.id)));
+      const deletedIds = deleted.map((d) => d.id);
+      setNodes((nds) => nds.filter((node) => !deletedIds.includes(node.id)));
     },
     [setNodes]
   );
 
   const onEdgesDelete = useCallback(
     (deleted: Edge[]) => {
-      setEdges((eds) => eds.filter((edge) => !deleted.find((d) => d.id === edge.id)));
+      const deletedIds = deleted.map((d) => d.id);
+      setEdges((eds) => eds.filter((edge) => !deletedIds.includes(edge.id)));
     },
     [setEdges]
   );
