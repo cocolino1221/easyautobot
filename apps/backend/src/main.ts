@@ -66,6 +66,18 @@ async function bootstrap() {
   await app.listen(port);
   console.log(`🚀 Application is running on: http://localhost:${port}`);
   console.log(`📚 Swagger docs available at: http://localhost:${port}/api/docs`);
+
+  // Log all registered routes for debugging
+  const server = app.getHttpServer();
+  const router = server._events.request._router;
+  console.log('📋 Registered routes:');
+  if (router && router.stack) {
+    router.stack.forEach((layer: any) => {
+      if (layer.route) {
+        console.log(`  ${Object.keys(layer.route.methods)} ${layer.route.path}`);
+      }
+    });
+  }
 }
 
 bootstrap();
