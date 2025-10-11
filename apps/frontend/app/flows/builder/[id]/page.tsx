@@ -161,7 +161,7 @@ export default function FlowBuilderPage() {
           position: node.position,
           data: node.data,
         })),
-        edges: edges.map(edge => ({
+        edges: edges.map((edge: Edge) => ({
           id: edge.id,
           source: edge.source,
           target: edge.target,
