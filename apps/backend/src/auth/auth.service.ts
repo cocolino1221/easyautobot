@@ -159,6 +159,55 @@ export class AuthService {
     return user;
   }
 
+  async signInWithOAuth(oauthUser: { email: string; firstName: string; lastName: string; picture: string }) {
+    // Find or create user
+    let user = await this.prisma.user.findUnique({
+      where: { email: oauthUser.email.toLowerCase() },
+      include: { tenant: true },
+    });
+
+    if (!user) {
+      // Create new tenant for OAuth user
+      const trialEndDate = new Date();
+      trialEndDate.setDate(trialEndDate.getDate() + 7); // 7 days from now
+
+      const tenant = await this.prisma.tenant.create({
+        data: {
+          name: `${oauthUser.firstName}'s Workspace`,
+          plan: 'FREE',
+          status: 'TRIALING',
+          currentPeriodEnd: trialEndDate,
+          maxIntegrations: 4,
+          maxMessagesPerMonth: 150,
+          maxTeamMembers: 1,
+          maxFlows: 3,
+        },
+      });
+
+      user = await this.prisma.user.create({
+        data: {
+          email: oauthUser.email.toLowerCase(),
+          name: `${oauthUser.firstName} ${oauthUser.lastName}`.trim(),
+          avatarUrl: oauthUser.picture,
+          role: 'OWNER',
+          tenantId: tenant.id,
+        },
+        include: { tenant: true },
+      });
+    }
+
+    // Check if tenant is active
+    if (user.tenant.status === 'CANCELED') {
+      throw new UnauthorizedException('❌ This account has been cancelled. Please contact support.');
+    }
+
+    if (user.tenant.status === 'TRIALING' && user.tenant.currentPeriodEnd && new Date() > user.tenant.currentPeriodEnd) {
+      throw new UnauthorizedException('⏰ Your trial has expired. Please upgrade your plan to continue.');
+    }
+
+    return this.generateToken(user);
+  }
+
   async generateToken(user: any) {
     const payload = {
       sub: user.id,
