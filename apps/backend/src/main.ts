@@ -17,7 +17,9 @@ async function bootstrap() {
       'http://localhost:3000',
       'http://localhost:3002',
       process.env.FRONTEND_URL || 'http://localhost:3002',
-      /\.railway\.app$/, // Allow all Railway domains
+      /\.railway\.app$/,
+      /\.vercel\.app$/,
+      /\.onrender\.com$/,
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],

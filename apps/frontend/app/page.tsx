@@ -31,15 +31,15 @@ export default function Home() {
             {/* Main Heading */}
             <h1 className="text-7xl font-bold leading-tight">
               <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                Unified Inbox
+                Auto-Interact
               </span>
               <br />
-              <span className="text-gray-900">for Social Messaging</span>
+              <span className="text-gray-900">with Your Leads</span>
             </h1>
 
             {/* Subtitle */}
             <p className="text-xl text-gray-700 max-w-2xl mx-auto leading-relaxed">
-              Manage all your customer conversations from Instagram, Facebook, WhatsApp, and TikTok in one beautiful dashboard.
+              Automate conversations and engage customers instantly across Instagram, Facebook, WhatsApp, and TikTok.
             </p>
 
             {/* CTA Buttons */}
