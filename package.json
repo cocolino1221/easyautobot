@@ -16,7 +16,6 @@
   },
   "devDependencies": {
     "@types/node": "^20.11.5",
-    "husky": "^9.0.10",
     "prettier": "^3.2.4",
     "turbo": "^1.12.4",
     "typescript": "^5.3.3"
