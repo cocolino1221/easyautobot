@@ -339,12 +339,13 @@ const nodeTypes = {
 };
 
 const initialNodes: Node[] = [];
+const initialEdges: Edge[] = [];
 
 export default function FlowBuilderPage() {
   const params = useParams();
   const router = useRouter();
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [flowName, setFlowName] = useState('Untitled Flow');
   const [isSaving, setIsSaving] = useState(false);
   const [showTriggerModal, setShowTriggerModal] = useState(false);
