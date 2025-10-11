@@ -33,8 +33,14 @@ export default function SignInPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        // Backend returns nice error messages with emojis
-        throw new Error(data.message || '🔐 Invalid email or password. Please try again.');
+        // Handle different error status codes
+        if (response.status === 401) {
+          throw new Error('🔐 Invalid email or password. Please check your credentials.');
+        } else if (response.status === 404) {
+          throw new Error('❌ Account not found. Please sign up first.');
+        } else {
+          throw new Error(data.message || '❌ Something went wrong. Please try again.');
+        }
       }
 
       // Store token

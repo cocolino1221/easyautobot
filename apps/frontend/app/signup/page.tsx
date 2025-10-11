@@ -42,7 +42,14 @@ export default function SignUpPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to create account');
+        // Handle different error status codes
+        if (response.status === 409) {
+          throw new Error('📧 An account with this email already exists. Please sign in instead.');
+        } else if (response.status === 422) {
+          throw new Error(data.message || '📝 Please check your form inputs and try again.');
+        } else {
+          throw new Error(data.message || '❌ Failed to create account. Please try again.');
+        }
       }
 
       // Store token
