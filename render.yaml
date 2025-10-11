@@ -2,7 +2,7 @@ services:
   - type: web
     name: easyautobot-backend
     runtime: node
-    buildCommand: npm install -g pnpm && pnpm install --frozen-lockfile && pnpm --filter @saas-platform/shared build && pnpm --filter @saas-platform/backend build
+    buildCommand: npm install -g pnpm && pnpm install --frozen-lockfile && cd apps/backend && pnpm prisma generate && cd ../.. && pnpm --filter @saas-platform/shared build && pnpm --filter @saas-platform/backend build
     startCommand: cd apps/backend && node dist/main
     envVars:
       - key: NODE_ENV
