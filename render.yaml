@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: easyautobot-backend
+    runtime: node
+    buildCommand: pnpm install && pnpm --filter @saas-platform/shared build && cd apps/backend && pnpm prisma generate && cd ../.. && pnpm --filter @saas-platform/backend build
+    startCommand: cd apps/backend && node dist/main
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3003
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRATION
+        value: 7d
+      - key: META_APP_ID
+        sync: false
+      - key: META_APP_SECRET
+        sync: false
+      - key: META_REDIRECT_URI
+        sync: false
+      - key: TIKTOK_CLIENT_KEY
+        sync: false
+      - key: TIKTOK_CLIENT_SECRET
+        sync: false
+      - key: TIKTOK_REDIRECT_URI
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
