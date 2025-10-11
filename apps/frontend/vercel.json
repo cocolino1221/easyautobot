@@ -1,6 +1,7 @@
 {
-  "buildCommand": "cd ../.. && pnpm install && pnpm --filter @saas-platform/frontend build",
+  "buildCommand": "cd ../.. && pnpm install && pnpm --filter @saas-platform/shared build && pnpm --filter @saas-platform/frontend build",
   "outputDirectory": ".next",
   "framework": "nextjs",
-  "installCommand": "cd ../.. && pnpm install"
+  "installCommand": "cd ../.. && pnpm install",
+  "ignoreCommand": "exit 0"
 }
