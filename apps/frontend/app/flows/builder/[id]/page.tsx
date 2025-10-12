@@ -837,7 +837,7 @@ export default function FlowBuilderPage() {
   const [connectionLineType, setConnectionLineType] = useState<'smoothstep' | 'straight' | 'step' | 'bezier'>('smoothstep');
 
   // Connection validation - prevent invalid connections
-  const isValidConnection = useCallback((connection: Connection) => {
+  const isValidConnection = useCallback((connection: Connection | Edge) => {
     // Prevent self-connection
     if (connection.source === connection.target) {
       return false;
