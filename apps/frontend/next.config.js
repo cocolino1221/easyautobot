@@ -20,16 +20,12 @@ const nextConfig = {
         source: '/api/:path*',
         destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003'}/api/v1/:path*`,
       },
-      {
-        source: '/tiktok-developers-site-verification=:code',
-        destination: '/tiktok-developers-site-verification.txt',
-      },
     ];
   },
   async headers() {
     return [
       {
-        source: '/tiktok-developers-site-verification.txt',
+        source: '/tiktok7fHNbRPiQdz4VezDzzqgiIirw98jMf9J.txt',
         headers: [
           {
             key: 'Content-Type',
