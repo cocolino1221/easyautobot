@@ -586,57 +586,46 @@ const NodeWrapper = ({ children, id, onDuplicate, onDelete, onConfigure, selecte
 );
 
 const TriggerNode = ({ id, data, selected }: any) => (
-  <div className={`relative bg-white rounded-2xl shadow-lg border-2 ${selected ? 'border-purple-500 shadow-2xl ring-4 ring-purple-200' : 'border-gray-200 hover:shadow-xl'} transition-all min-w-[300px] transform hover:scale-105`}>
-    <Handle type="source" position={Position.Bottom} className="w-4 h-4 bg-purple-500 border-2 border-white shadow-lg" />
-
-    {/* Status Badge */}
-    <div className="absolute -top-2 -right-2 z-10">
-      <div className={`px-2 py-1 rounded-full text-xs font-bold ${data.status === 'active' ? 'bg-green-500' : 'bg-gray-400'} text-white shadow-lg`}>
-        {data.status === 'active' ? '● Active' : '○ Paused'}
-      </div>
-    </div>
+  <div className={`relative bg-white rounded-lg shadow-md border ${selected ? 'border-purple-500 shadow-lg' : 'border-gray-300'} transition-all w-[280px]`}>
+    <Handle type="source" position={Position.Bottom} className="w-3 h-3 bg-purple-500 border-2 border-white" />
 
     {/* Header */}
-    <div className="bg-gradient-to-r from-purple-500 via-purple-600 to-pink-500 px-4 py-3 rounded-t-2xl">
-      <div className="flex items-center gap-3">
-        <div className="w-12 h-12 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center shadow-lg">
-          <span className="text-3xl">⚡</span>
-        </div>
-        <div className="text-white flex-1">
-          <div className="text-xs font-bold opacity-90 tracking-wider">TRIGGER</div>
-          <div className="font-bold text-base">{data.config?.platform || 'Not Configured'}</div>
-        </div>
+    <div className="bg-purple-500 px-3 py-2 rounded-t-lg flex items-center gap-2">
+      <span className="text-lg">⚡</span>
+      <div className="text-white flex-1">
+        <div className="text-xs font-medium">Trigger</div>
+        <div className="font-semibold text-sm">{data.config?.platform || 'Not Configured'}</div>
       </div>
     </div>
 
     {/* Body */}
-    <div className="p-4">
+    <div className="p-3">
       {data.config?.platform ? (
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-gray-500 font-medium">Platform:</span>
-            <span className="font-bold capitalize bg-purple-100 px-3 py-1 rounded-full text-purple-700">{data.config.platform}</span>
+        <div className="space-y-2 text-xs">
+          <div className="flex items-center gap-2">
+            <span className="text-gray-600">Platform:</span>
+            <span className="font-semibold capitalize text-gray-900">{data.config.platform}</span>
           </div>
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-gray-500 font-medium">Content:</span>
-            <span className="font-bold capitalize bg-blue-100 px-3 py-1 rounded-full text-blue-700">{data.config.contentType}</span>
+          <div className="flex items-center gap-2">
+            <span className="text-gray-600">Content:</span>
+            <span className="font-semibold capitalize text-gray-900">{data.config.contentType}</span>
           </div>
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-gray-500 font-medium">Trigger:</span>
-            <span className="font-bold capitalize bg-green-100 px-3 py-1 rounded-full text-green-700">{data.config.interactionType?.replace('_', ' ')}</span>
+          <div className="flex items-center gap-2">
+            <span className="text-gray-600">Trigger:</span>
+            <span className="font-semibold capitalize text-gray-900">{data.config.interactionType?.replace('_', ' ')}</span>
           </div>
           {data.config.keywords && data.config.keywords.length > 0 && (
-            <div className="mt-3 px-4 py-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border-2 border-purple-200">
-              <div className="text-xs text-purple-700 font-bold mb-2">🔑 Keywords ({data.config.keywords.length}):</div>
+            <div className="mt-2 pt-2 border-t border-gray-200">
+              <div className="text-gray-600 mb-1">Keywords ({data.config.keywords.length}):</div>
               <div className="flex flex-wrap gap-1">
                 {data.config.keywords.slice(0, 3).map((kw: string, idx: number) => (
-                  <span key={idx} className="text-xs bg-purple-200 text-purple-800 px-2 py-1 rounded-full font-semibold">
+                  <span key={idx} className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded">
                     {kw}
                   </span>
                 ))}
                 {data.config.keywords.length > 3 && (
-                  <span className="text-xs bg-purple-300 text-purple-900 px-2 py-1 rounded-full font-bold">
-                    +{data.config.keywords.length - 3} more
+                  <span className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">
+                    +{data.config.keywords.length - 3}
                   </span>
                 )}
               </div>
@@ -644,56 +633,41 @@ const TriggerNode = ({ id, data, selected }: any) => (
           )}
         </div>
       ) : (
-        <div className="text-sm text-gray-400 text-center py-3 font-medium">Click to configure trigger</div>
+        <div className="text-xs text-gray-400 text-center py-2">Click to configure</div>
       )}
     </div>
   </div>
 );
 
 const ActionNode = ({ id, data, selected }: any) => (
-  <div className={`relative bg-white rounded-2xl shadow-lg border-2 ${selected ? 'border-blue-500 shadow-2xl ring-4 ring-blue-200' : 'border-gray-200 hover:shadow-xl'} transition-all min-w-[300px] transform hover:scale-105`}>
-    <Handle type="target" position={Position.Top} className="w-4 h-4 bg-blue-500 border-2 border-white shadow-lg" />
-    <Handle type="source" position={Position.Bottom} className="w-4 h-4 bg-blue-500 border-2 border-white shadow-lg" />
+  <div className={`relative bg-white rounded-lg shadow-md border ${selected ? 'border-blue-500 shadow-lg' : 'border-gray-300'} transition-all w-[280px]`}>
+    <Handle type="target" position={Position.Top} className="w-3 h-3 bg-blue-500 border-2 border-white" />
+    <Handle type="source" position={Position.Bottom} className="w-3 h-3 bg-blue-500 border-2 border-white" />
 
-    <div className="absolute -top-2 -right-2 z-10">
-      <div className={`px-2 py-1 rounded-full text-xs font-bold ${data.status === 'active' ? 'bg-green-500' : 'bg-gray-400'} text-white shadow-lg`}>
-        {data.status === 'active' ? '● Active' : '○ Paused'}
+    <div className="bg-blue-500 px-3 py-2 rounded-t-lg flex items-center gap-2">
+      <span className="text-lg">{data.icon || '💬'}</span>
+      <div className="text-white flex-1">
+        <div className="text-xs font-medium">Action</div>
+        <div className="font-semibold text-sm truncate">{data.label}</div>
       </div>
     </div>
 
-    <div className="bg-gradient-to-r from-blue-500 via-blue-600 to-cyan-500 px-4 py-3 rounded-t-2xl">
-      <div className="flex items-center gap-3">
-        <div className="w-12 h-12 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center shadow-lg">
-          <span className="text-3xl">{data.icon || '💬'}</span>
-        </div>
-        <div className="text-white flex-1">
-          <div className="text-xs font-bold opacity-90 tracking-wider">ACTION</div>
-          <div className="font-bold text-base">{data.label}</div>
-        </div>
-      </div>
-    </div>
-
-    <div className="p-4">
-      <div className="text-sm text-gray-600 mb-3">{data.description}</div>
-      {data.actionType && (
-        <div className="px-4 py-2 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg text-xs text-blue-700 font-bold border-2 border-blue-200">
-          Type: {data.actionType.replace('_', ' ').toUpperCase()}
+    <div className="p-3">
+      <div className="text-xs text-gray-600 mb-2">{data.description}</div>
+      {data.messageTemplate && data.actionType !== 'send_voice_message' && (
+        <div className="mt-2 p-2 bg-gray-50 rounded text-xs text-gray-700 border border-gray-200">
+          "{data.messageTemplate.substring(0, 60)}{data.messageTemplate.length > 60 ? '...' : ''}"
         </div>
       )}
       {data.actionType === 'send_voice_message' && data.voiceFile && (
-        <div className="mt-3 p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border-2 border-purple-200">
+        <div className="mt-2 p-2 bg-purple-50 rounded border border-purple-200">
           <div className="flex items-center gap-2 text-xs">
-            <span className="text-lg">🎤</span>
-            <div className="flex-1">
-              <div className="font-bold text-purple-700">{data.voiceFile}</div>
-              <div className="text-purple-600">{data.voiceSize || 'Audio file'}</div>
+            <span>🎤</span>
+            <div className="flex-1 min-w-0">
+              <div className="font-semibold text-purple-700 truncate">{data.voiceFile}</div>
+              <div className="text-purple-600 text-xs">{data.voiceSize || 'Audio file'}</div>
             </div>
           </div>
-        </div>
-      )}
-      {data.messageTemplate && data.actionType !== 'send_voice_message' && (
-        <div className="mt-3 p-3 bg-gray-50 rounded-lg text-xs text-gray-600 italic border border-gray-200">
-          "{data.messageTemplate.substring(0, 50)}{data.messageTemplate.length > 50 ? '...' : ''}"
         </div>
       )}
     </div>
@@ -701,39 +675,24 @@ const ActionNode = ({ id, data, selected }: any) => (
 );
 
 const AIAgentNode = ({ id, data, selected }: any) => (
-  <div className={`relative bg-white rounded-2xl shadow-lg border-2 ${selected ? 'border-indigo-500 shadow-2xl ring-4 ring-indigo-200' : 'border-gray-200 hover:shadow-xl'} transition-all min-w-[300px] transform hover:scale-105`}>
-    <Handle type="target" position={Position.Top} className="w-4 h-4 bg-indigo-500 border-2 border-white shadow-lg" />
-    <Handle type="source" position={Position.Bottom} className="w-4 h-4 bg-indigo-500 border-2 border-white shadow-lg" />
+  <div className={`relative bg-white rounded-lg shadow-md border ${selected ? 'border-indigo-500 shadow-lg' : 'border-gray-300'} transition-all w-[280px]`}>
+    <Handle type="target" position={Position.Top} className="w-3 h-3 bg-indigo-500 border-2 border-white" />
+    <Handle type="source" position={Position.Bottom} className="w-3 h-3 bg-indigo-500 border-2 border-white" />
 
-    <div className="absolute -top-2 -right-2 z-10">
-      <div className={`px-2 py-1 rounded-full text-xs font-bold ${data.status === 'active' ? 'bg-green-500' : 'bg-gray-400'} text-white shadow-lg`}>
-        {data.status === 'active' ? '● Active' : '○ Paused'}
+    <div className="bg-indigo-500 px-3 py-2 rounded-t-lg flex items-center gap-2">
+      <span className="text-lg">{data.icon || '🤖'}</span>
+      <div className="text-white flex-1">
+        <div className="text-xs font-medium">AI Agent</div>
+        <div className="font-semibold text-sm truncate">{data.label}</div>
       </div>
     </div>
 
-    <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 px-4 py-3 rounded-t-2xl">
-      <div className="flex items-center gap-3">
-        <div className="w-12 h-12 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center shadow-lg animate-pulse">
-          <span className="text-3xl">{data.icon || '🤖'}</span>
-        </div>
-        <div className="text-white flex-1">
-          <div className="text-xs font-bold opacity-90 tracking-wider">AI AGENT</div>
-          <div className="font-bold text-base">{data.label}</div>
-        </div>
-      </div>
-    </div>
-
-    <div className="p-4">
-      <div className="text-sm text-gray-600 mb-3">{data.description}</div>
-      {data.agentType && (
-        <div className="px-4 py-2 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 rounded-lg border-2 border-indigo-200">
-          <div className="text-xs text-indigo-700 font-bold">✨ {data.agentType.replace('_', ' ').toUpperCase()}</div>
-        </div>
-      )}
+    <div className="p-3">
+      <div className="text-xs text-gray-600 mb-2">{data.description}</div>
       {data.aiModel && (
-        <div className="mt-3 flex items-center gap-2">
-          <span className="text-xs text-gray-500">Model:</span>
-          <span className="text-xs font-bold bg-indigo-100 px-2 py-1 rounded text-indigo-700">{data.aiModel}</span>
+        <div className="mt-2 flex items-center gap-2 text-xs">
+          <span className="text-gray-500">Model:</span>
+          <span className="font-semibold bg-indigo-50 px-2 py-1 rounded text-indigo-700">{data.aiModel}</span>
         </div>
       )}
     </div>
@@ -741,69 +700,50 @@ const AIAgentNode = ({ id, data, selected }: any) => (
 );
 
 const ConditionNode = ({ id, data, selected }: any) => (
-  <div className={`relative bg-white rounded-2xl shadow-lg border-2 ${selected ? 'border-amber-500 shadow-2xl ring-4 ring-amber-200' : 'border-gray-200 hover:shadow-xl'} transition-all min-w-[300px] transform hover:scale-105`}>
-    <Handle type="target" position={Position.Top} className="w-4 h-4 bg-amber-500 border-2 border-white shadow-lg" />
-    <Handle type="source" position={Position.Bottom} className="w-4 h-4 bg-green-500 border-2 border-white shadow-lg" id="yes" style={{ left: '30%' }} />
-    <Handle type="source" position={Position.Bottom} className="w-4 h-4 bg-red-500 border-2 border-white shadow-lg" id="no" style={{ left: '70%' }} />
+  <div className={`relative bg-white rounded-lg shadow-md border ${selected ? 'border-orange-500 shadow-lg' : 'border-gray-300'} transition-all w-[280px]`}>
+    <Handle type="target" position={Position.Top} className="w-3 h-3 bg-orange-500 border-2 border-white" />
+    <Handle type="source" position={Position.Bottom} className="w-3 h-3 bg-green-500 border-2 border-white" id="yes" style={{ left: '35%' }} />
+    <Handle type="source" position={Position.Bottom} className="w-3 h-3 bg-red-500 border-2 border-white" id="no" style={{ left: '65%' }} />
 
-    <div className="absolute -top-2 -right-2 z-10">
-      <div className={`px-2 py-1 rounded-full text-xs font-bold ${data.status === 'active' ? 'bg-green-500' : 'bg-gray-400'} text-white shadow-lg`}>
-        {data.status === 'active' ? '● Active' : '○ Paused'}
+    <div className="bg-orange-500 px-3 py-2 rounded-t-lg flex items-center gap-2">
+      <span className="text-lg">❓</span>
+      <div className="text-white flex-1">
+        <div className="text-xs font-medium">Condition</div>
+        <div className="font-semibold text-sm truncate">{data.label}</div>
       </div>
     </div>
 
-    <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 px-4 py-3 rounded-t-2xl">
-      <div className="flex items-center gap-3">
-        <div className="w-12 h-12 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center shadow-lg">
-          <span className="text-3xl">❓</span>
+    <div className="p-3">
+      <div className="text-xs text-gray-600 mb-2">{data.description}</div>
+      <div className="flex gap-2 mt-2">
+        <div className="flex-1 px-2 py-1.5 bg-green-50 rounded text-center border border-green-300">
+          <div className="text-green-700 font-semibold text-xs">✓ Yes</div>
         </div>
-        <div className="text-white flex-1">
-          <div className="text-xs font-bold opacity-90 tracking-wider">CONDITION</div>
-          <div className="font-bold text-base">{data.label}</div>
-        </div>
-      </div>
-    </div>
-
-    <div className="p-4">
-      <div className="text-sm text-gray-600 mb-3">{data.description}</div>
-      <div className="flex gap-2">
-        <div className="flex-1 px-3 py-2 bg-green-50 rounded-lg text-center border-2 border-green-300">
-          <div className="text-green-700 font-bold text-xs">✓ YES</div>
-        </div>
-        <div className="flex-1 px-3 py-2 bg-red-50 rounded-lg text-center border-2 border-red-300">
-          <div className="text-red-700 font-bold text-xs">✗ NO</div>
+        <div className="flex-1 px-2 py-1.5 bg-red-50 rounded text-center border border-red-300">
+          <div className="text-red-700 font-semibold text-xs">✗ No</div>
         </div>
       </div>
-      {data.conditionType && (
-        <div className="mt-3 px-4 py-2 bg-amber-50 rounded-lg text-xs text-amber-700 font-bold border-2 border-amber-200">
-          Type: {data.conditionType.replace('_', ' ').toUpperCase()}
-        </div>
-      )}
     </div>
   </div>
 );
 
 const DelayNode = ({ id, data, selected }: any) => (
-  <div className={`relative bg-white rounded-2xl shadow-lg border-2 ${selected ? 'border-indigo-500 shadow-2xl ring-4 ring-indigo-200' : 'border-gray-200 hover:shadow-xl'} transition-all min-w-[280px] transform hover:scale-105`}>
-    <Handle type="target" position={Position.Top} className="w-4 h-4 bg-indigo-500 border-2 border-white shadow-lg" />
-    <Handle type="source" position={Position.Bottom} className="w-4 h-4 bg-indigo-500 border-2 border-white shadow-lg" />
+  <div className={`relative bg-white rounded-lg shadow-md border ${selected ? 'border-cyan-500 shadow-lg' : 'border-gray-300'} transition-all w-[280px]`}>
+    <Handle type="target" position={Position.Top} className="w-3 h-3 bg-cyan-500 border-2 border-white" />
+    <Handle type="source" position={Position.Bottom} className="w-3 h-3 bg-cyan-500 border-2 border-white" />
 
-    <div className="bg-gradient-to-r from-indigo-400 via-blue-400 to-cyan-400 px-4 py-3 rounded-t-2xl">
-      <div className="flex items-center gap-3">
-        <div className="w-12 h-12 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center shadow-lg">
-          <span className="text-3xl">⏰</span>
-        </div>
-        <div className="text-white flex-1">
-          <div className="text-xs font-bold opacity-90 tracking-wider">DELAY</div>
-          <div className="font-bold text-base">{data.label}</div>
-        </div>
+    <div className="bg-cyan-500 px-3 py-2 rounded-t-lg flex items-center gap-2">
+      <span className="text-lg">⏰</span>
+      <div className="text-white flex-1">
+        <div className="text-xs font-medium">Delay</div>
+        <div className="font-semibold text-sm truncate">{data.label}</div>
       </div>
     </div>
 
-    <div className="p-4">
-      <div className="text-sm text-gray-600">{data.description}</div>
-      <div className="mt-3 px-4 py-2 bg-indigo-50 rounded-lg text-center border-2 border-indigo-200">
-        <div className="text-indigo-700 font-bold">{data.duration || '5 minutes'}</div>
+    <div className="p-3">
+      <div className="text-xs text-gray-600 mb-2">{data.description}</div>
+      <div className="mt-2 px-3 py-2 bg-cyan-50 rounded text-center border border-cyan-200">
+        <div className="text-cyan-700 font-semibold text-sm">{data.duration || '5 minutes'}</div>
       </div>
     </div>
   </div>
@@ -1238,7 +1178,7 @@ export default function FlowBuilderPage() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div className="h-screen flex flex-col bg-gray-50">
       <TriggerConfigModal
         isOpen={showTriggerModal}
         onClose={() => setShowTriggerModal(false)}
@@ -1253,31 +1193,31 @@ export default function FlowBuilderPage() {
       />
 
       {/* Top Bar */}
-      <div className="bg-white border-b-2 border-gray-200 px-6 py-4 flex items-center justify-between shadow-lg">
+      <div className="bg-white border-b border-gray-200 px-5 py-3 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="outline" onClick={() => router.push('/flows')} className="gap-2 font-semibold">
+          <Button variant="outline" onClick={() => router.push('/flows')} className="gap-2 text-sm h-9">
             <span>←</span> Back
           </Button>
-          <div className="h-8 w-px bg-gray-300" />
+          <div className="h-6 w-px bg-gray-300" />
           <input
             type="text"
             value={flowName}
             onChange={(e) => setFlowName(e.target.value)}
-            className="text-xl font-bold border-none outline-none bg-transparent px-3 py-2 hover:bg-gray-50 rounded-lg transition-colors"
+            className="text-lg font-semibold border-none outline-none bg-transparent px-2 py-1 hover:bg-gray-50 rounded transition-colors"
             placeholder="Flow Name"
           />
         </div>
-        <div className="flex gap-3">
-          <Button variant="outline" className="gap-2 font-semibold">
+        <div className="flex gap-2">
+          <Button variant="outline" className="gap-2 text-sm h-9">
             <span>▶️</span> Test Flow
           </Button>
-          <Button variant="outline" className="gap-2 font-semibold">
+          <Button variant="outline" className="gap-2 text-sm h-9">
             <span>📊</span> Analytics
           </Button>
           <Button
             onClick={saveFlow}
             disabled={isSaving}
-            className="bg-gradient-to-r from-purple-600 via-purple-700 to-pink-600 hover:from-purple-700 hover:to-pink-700 gap-2 font-semibold shadow-lg hover:shadow-xl transition-all"
+            className="bg-purple-600 hover:bg-purple-700 gap-2 text-sm h-9"
           >
             <span>💾</span> {isSaving ? 'Saving...' : 'Save Flow'}
           </Button>
@@ -1285,47 +1225,46 @@ export default function FlowBuilderPage() {
       </div>
 
       <div className="flex-1 flex overflow-hidden">
-        {/* Enhanced Sidebar */}
-        <div className="w-[420px] bg-white border-r-2 border-gray-200 overflow-y-auto shadow-xl">
-          <div className="p-6">
+        {/* Sidebar */}
+        <div className="w-[320px] bg-white border-r border-gray-200 overflow-y-auto">
+          <div className="p-4">
             {/* Search Bar */}
-            <div className="mb-6">
+            <div className="mb-4">
               <div className="relative">
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="🔍 Search blocks..."
-                  className="w-full px-4 py-3 pl-12 border-2 border-gray-300 rounded-xl focus:border-purple-500 outline-none transition-all font-medium"
+                  placeholder="Search blocks..."
+                  className="w-full px-3 py-2 pl-9 border border-gray-300 rounded-lg focus:border-purple-500 outline-none transition-all text-sm"
                 />
-                <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-xl">🔍</span>
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">🔍</span>
               </div>
             </div>
 
-            <h3 className="font-bold text-2xl mb-6 flex items-center gap-3">
-              <span className="text-3xl">🧩</span>
+            <h3 className="font-semibold text-base mb-4 flex items-center gap-2 text-gray-700">
               <span>Blocks</span>
-              <span className="ml-auto text-sm font-normal text-gray-500">{filteredBlocks.reduce((acc, cat) => acc + cat.blocks.length, 0)} blocks</span>
+              <span className="ml-auto text-xs font-normal text-gray-500">{filteredBlocks.reduce((acc, cat) => acc + cat.blocks.length, 0)}</span>
             </h3>
 
             {filteredBlocks.map((category) => (
-              <div key={category.category} className="mb-8">
+              <div key={category.category} className="mb-5">
                 <button
                   onClick={() => toggleSection(category.category)}
-                  className="flex items-center gap-3 mb-4 w-full hover:bg-gray-50 p-2 rounded-lg transition-all"
+                  className="flex items-center gap-2 mb-2 w-full hover:bg-gray-50 p-2 rounded transition-all"
                 >
-                  <span className="text-2xl">{category.icon}</span>
-                  <h4 className="text-sm font-bold text-gray-800 uppercase tracking-wider flex-1 text-left">
+                  <span className="text-base">{category.icon}</span>
+                  <h4 className="text-xs font-semibold text-gray-700 uppercase tracking-wide flex-1 text-left">
                     {category.category}
                   </h4>
-                  <span className="text-xs bg-gray-200 px-2 py-1 rounded-full font-bold">{category.blocks.length}</span>
-                  <span className={`text-gray-400 transform transition-transform ${collapsedSections.includes(category.category) ? '' : 'rotate-90'}`}>
+                  <span className="text-xs bg-gray-100 px-1.5 py-0.5 rounded font-medium text-gray-600">{category.blocks.length}</span>
+                  <span className={`text-gray-400 text-xs transform transition-transform ${collapsedSections.includes(category.category) ? '' : 'rotate-90'}`}>
                     ▶
                   </span>
                 </button>
 
                 {!collapsedSections.includes(category.category) && (
-                  <div className="space-y-3 pl-2">
+                  <div className="space-y-2">
                     {category.blocks.map((block, idx) => (
                       <button
                         key={idx}
@@ -1335,13 +1274,13 @@ export default function FlowBuilderPage() {
                           e.dataTransfer.setData('application/reactflow', JSON.stringify(block));
                           e.dataTransfer.effectAllowed = 'move';
                         }}
-                        className="w-full text-left p-4 rounded-xl border-2 border-gray-200 hover:border-purple-500 hover:shadow-xl transition-all bg-gradient-to-br from-white to-gray-50 group cursor-grab active:cursor-grabbing"
+                        className="w-full text-left p-3 rounded-lg border border-gray-200 hover:border-purple-400 hover:shadow-md transition-all bg-white group cursor-grab active:cursor-grabbing"
                       >
-                        <div className="flex items-start gap-3">
-                          <div className="text-4xl group-hover:scale-125 group-hover:rotate-12 transition-all duration-300">{block.icon}</div>
+                        <div className="flex items-start gap-2">
+                          <div className="text-lg">{block.icon}</div>
                           <div className="flex-1 min-w-0">
-                            <div className="font-bold text-sm text-gray-900 mb-1">{block.label}</div>
-                            <div className="text-xs text-gray-500 leading-relaxed">{block.description}</div>
+                            <div className="font-semibold text-sm text-gray-900">{block.label}</div>
+                            <div className="text-xs text-gray-500 mt-0.5">{block.description}</div>
                           </div>
                         </div>
                       </button>
@@ -1368,24 +1307,25 @@ export default function FlowBuilderPage() {
             isValidConnection={isValidConnection}
             connectionLineType={connectionLineType}
             fitView
-            className="bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50"
+            className="bg-white"
             deleteKeyCode={['Backspace', 'Delete']}
             defaultEdgeOptions={{
               type: connectionLineType,
               animated: true,
-              style: { stroke: '#9333ea', strokeWidth: 3 },
+              style: { stroke: '#9333ea', strokeWidth: 2 },
             }}
           >
-            <Background color="#e5e7eb" gap={24} size={2} />
-            <Controls className="bg-white rounded-xl shadow-xl border-2 border-gray-200 m-4" />
+            <Background color="#f3f4f6" gap={16} size={1} />
+            <Controls className="bg-white rounded-lg shadow-md border border-gray-200 m-4" />
             <MiniMap
-              className="bg-white rounded-xl shadow-xl border-2 border-gray-200 m-4"
+              className="bg-white rounded-lg shadow-md border border-gray-200 m-4"
               nodeColor={(node) => {
                 switch (node.type) {
                   case 'trigger': return '#a855f7';
                   case 'action': return '#3b82f6';
                   case 'aiAgent': return '#6366f1';
-                  case 'condition': return '#f59e0b';
+                  case 'condition': return '#f97316';
+                  case 'delay': return '#06b6d4';
                   default: return '#6b7280';
                 }
               }}
@@ -1394,51 +1334,47 @@ export default function FlowBuilderPage() {
               <div className="flex gap-2">
                 <Button
                   onClick={autoArrange}
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 text-white font-semibold px-4 py-2 rounded-xl"
-                  title="Auto-arrange nodes (ManyChat style)"
+                  className="bg-purple-600 hover:bg-purple-700 shadow-md text-white font-medium px-3 py-2 rounded-lg text-sm h-9"
+                  title="Auto-arrange nodes"
                 >
-                  <span className="mr-2">🎯</span>
+                  <span className="mr-1">🎯</span>
                   Auto-Arrange
                 </Button>
-                <div className="bg-white/95 backdrop-blur-lg px-4 py-3 rounded-xl shadow-lg border-2 border-gray-200">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                <div className="bg-white px-3 py-2 rounded-lg shadow-md border border-gray-200">
+                  <div className="flex items-center gap-2 text-xs font-medium text-gray-600">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
                     <span>{nodes.length} Nodes</span>
-                    <span className="mx-2">|</span>
-                    <span>{edges.length} Connections</span>
+                    <span className="text-gray-300">|</span>
+                    <span>{edges.length} Edges</span>
                   </div>
                 </div>
               </div>
 
               {/* Connection Line Style Selector */}
-              <div className="bg-white/95 backdrop-blur-lg px-4 py-3 rounded-xl shadow-lg border-2 border-gray-200">
-                <label className="block text-xs font-bold text-gray-600 mb-2">Connection Style</label>
-                <div className="flex gap-2">
+              <div className="bg-white px-3 py-2 rounded-lg shadow-md border border-gray-200">
+                <label className="block text-xs font-semibold text-gray-600 mb-2">Connection Style</label>
+                <div className="flex gap-1">
                   <button
                     onClick={() => setConnectionLineType(ConnectionLineType.SmoothStep)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${connectionLineType === ConnectionLineType.SmoothStep ? 'bg-purple-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
-                    title="Smooth curved lines"
+                    className={`px-2 py-1 rounded text-xs font-medium transition-all ${connectionLineType === ConnectionLineType.SmoothStep ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
                   >
                     Smooth
                   </button>
                   <button
                     onClick={() => setConnectionLineType(ConnectionLineType.Bezier)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${connectionLineType === ConnectionLineType.Bezier ? 'bg-purple-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
-                    title="Bezier curves"
+                    className={`px-2 py-1 rounded text-xs font-medium transition-all ${connectionLineType === ConnectionLineType.Bezier ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
                   >
                     Curve
                   </button>
                   <button
                     onClick={() => setConnectionLineType(ConnectionLineType.Step)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${connectionLineType === ConnectionLineType.Step ? 'bg-purple-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
-                    title="Step lines"
+                    className={`px-2 py-1 rounded text-xs font-medium transition-all ${connectionLineType === ConnectionLineType.Step ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
                   >
                     Step
                   </button>
                   <button
                     onClick={() => setConnectionLineType(ConnectionLineType.Straight)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${connectionLineType === ConnectionLineType.Straight ? 'bg-purple-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
-                    title="Straight lines"
+                    className={`px-2 py-1 rounded text-xs font-medium transition-all ${connectionLineType === ConnectionLineType.Straight ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
                   >
                     Straight
                   </button>
@@ -1446,16 +1382,15 @@ export default function FlowBuilderPage() {
               </div>
             </Panel>
             {showProTips && (
-              <Panel position="top-center" className="bg-gradient-to-r from-purple-500/90 to-pink-500/90 backdrop-blur-lg px-8 py-4 rounded-2xl shadow-2xl border-2 border-white/20 m-4">
-                <div className="text-sm text-white flex items-center gap-3 font-semibold">
-                  <span className="text-2xl animate-pulse">💡</span>
+              <Panel position="top-center" className="bg-purple-600 px-4 py-2 rounded-lg shadow-md border border-purple-700 m-4">
+                <div className="text-xs text-white flex items-center gap-2">
+                  <span>💡</span>
                   <div className="flex-1">
-                    <strong className="block">Pro Tips:</strong>
-                    <span className="text-xs opacity-90">Drag blocks from sidebar • Click nodes to configure • Auto-arrange for clean layout • Connect with handles • Delete with Backspace</span>
+                    <span className="font-medium">Drag blocks • Click to configure • Auto-arrange for clean layout</span>
                   </div>
                   <button
                     onClick={() => setShowProTips(false)}
-                    className="ml-4 w-6 h-6 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 transition-all text-white font-bold"
+                    className="ml-2 w-5 h-5 flex items-center justify-center rounded hover:bg-purple-700 transition-all text-white"
                     title="Close tips"
                   >
                     ✕
