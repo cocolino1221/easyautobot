@@ -16,6 +16,8 @@ import {
   Handle,
   Position,
   MarkerType,
+  useReactFlow,
+  ReactFlowProvider,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { Button } from '@/components/ui/button';
@@ -792,6 +794,99 @@ export default function FlowBuilderPage() {
     [setEdges]
   );
 
+  // Auto-arrange function - ManyChat inspired
+  const autoArrange = useCallback(() => {
+    const nodesCopy = [...nodes];
+
+    // Build adjacency list
+    const adjacency = new Map<string, string[]>();
+    const inDegree = new Map<string, number>();
+
+    nodesCopy.forEach(node => {
+      adjacency.set(node.id, []);
+      inDegree.set(node.id, 0);
+    });
+
+    edges.forEach(edge => {
+      adjacency.get(edge.source)?.push(edge.target);
+      inDegree.set(edge.target, (inDegree.get(edge.target) || 0) + 1);
+    });
+
+    // Topological sort to get layers
+    const layers: string[][] = [];
+    const queue: string[] = [];
+    const visited = new Set<string>();
+
+    // Start with nodes that have no incoming edges
+    nodesCopy.forEach(node => {
+      if (inDegree.get(node.id) === 0) {
+        queue.push(node.id);
+      }
+    });
+
+    while (queue.length > 0) {
+      const layerSize = queue.length;
+      const currentLayer: string[] = [];
+
+      for (let i = 0; i < layerSize; i++) {
+        const nodeId = queue.shift()!;
+        currentLayer.push(nodeId);
+        visited.add(nodeId);
+
+        adjacency.get(nodeId)?.forEach(neighbor => {
+          const newDegree = (inDegree.get(neighbor) || 0) - 1;
+          inDegree.set(neighbor, newDegree);
+          if (newDegree === 0 && !visited.has(neighbor)) {
+            queue.push(neighbor);
+          }
+        });
+      }
+
+      if (currentLayer.length > 0) {
+        layers.push(currentLayer);
+      }
+    }
+
+    // Add any disconnected nodes as a separate layer
+    const disconnected = nodesCopy.filter(n => !visited.has(n.id)).map(n => n.id);
+    if (disconnected.length > 0) {
+      layers.push(disconnected);
+    }
+
+    // Position nodes
+    const horizontalSpacing = 400;
+    const verticalSpacing = 200;
+
+    const arranged = nodesCopy.map(node => {
+      let layerIndex = -1;
+      let positionInLayer = -1;
+
+      for (let i = 0; i < layers.length; i++) {
+        const pos = layers[i].indexOf(node.id);
+        if (pos !== -1) {
+          layerIndex = i;
+          positionInLayer = pos;
+          break;
+        }
+      }
+
+      if (layerIndex === -1) return node;
+
+      const layerWidth = layers[layerIndex].length * horizontalSpacing;
+      const startX = -layerWidth / 2 + horizontalSpacing / 2;
+
+      return {
+        ...node,
+        position: {
+          x: startX + positionInLayer * horizontalSpacing,
+          y: layerIndex * verticalSpacing
+        }
+      };
+    });
+
+    setNodes(arranged);
+  }, [nodes, edges, setNodes]);
+
   // Enhanced Block templates
   const blockTemplates = [
     {
@@ -822,12 +917,18 @@ export default function FlowBuilderPage() {
       color: 'blue',
       icon: '⚙️',
       blocks: [
-        { type: 'action', label: 'Send DM', description: 'Send direct message', icon: '📤', actionType: 'send_message', status: 'active' },
+        { type: 'action', label: 'Send Message', description: 'Send direct message', icon: '📤', actionType: 'send_message', status: 'active' },
+        { type: 'action', label: 'Quick Replies', description: 'Send buttons (max 12)', icon: '🔘', actionType: 'quick_replies', quickReplies: ['Option 1', 'Option 2'], status: 'active' },
         { type: 'action', label: 'Reply Comment', description: 'Reply to comment', icon: '↩️', actionType: 'reply_comment', status: 'active' },
         { type: 'action', label: 'Auto-Reply', description: 'Send templated response', icon: '💬', actionType: 'auto_reply', status: 'active' },
         { type: 'action', label: 'Add Tag', description: 'Tag the user', icon: '🏷️', actionType: 'add_tag', status: 'active' },
+        { type: 'action', label: 'Remove Tag', description: 'Remove user tag', icon: '🗑️', actionType: 'remove_tag', status: 'active' },
+        { type: 'action', label: 'Subscribe', description: 'Add to sequence', icon: '➕', actionType: 'subscribe', status: 'active' },
+        { type: 'action', label: 'Unsubscribe', description: 'Remove from sequence', icon: '➖', actionType: 'unsubscribe', status: 'active' },
         { type: 'action', label: 'Save to CRM', description: 'Store in database', icon: '💾', actionType: 'save_crm', status: 'active' },
         { type: 'action', label: 'Send Email', description: 'Email notification', icon: '📧', actionType: 'send_email', status: 'active' },
+        { type: 'action', label: 'Start Flow', description: 'Trigger another automation', icon: '🔄', actionType: 'start_flow', status: 'active' },
+        { type: 'action', label: 'Set Field', description: 'Update user data', icon: '📝', actionType: 'set_field', status: 'active' },
       ]
     },
     {
@@ -1158,6 +1259,14 @@ export default function FlowBuilderPage() {
               }}
             />
             <Panel position="top-right" className="flex gap-2 m-4">
+              <Button
+                onClick={autoArrange}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 text-white font-semibold px-4 py-2 rounded-xl"
+                title="Auto-arrange nodes (ManyChat style)"
+              >
+                <span className="mr-2">🎯</span>
+                Auto-Arrange
+              </Button>
               <div className="bg-white/95 backdrop-blur-lg px-4 py-3 rounded-xl shadow-lg border-2 border-gray-200">
                 <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
                   <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
@@ -1172,7 +1281,7 @@ export default function FlowBuilderPage() {
                 <span className="text-2xl animate-pulse">💡</span>
                 <div>
                   <strong className="block">Pro Tips:</strong>
-                  <span className="text-xs opacity-90">Drag blocks from sidebar • Click nodes to configure • Connect with handles • Delete with Backspace</span>
+                  <span className="text-xs opacity-90">Drag blocks from sidebar • Click nodes to configure • Auto-arrange for clean layout • Connect with handles • Delete with Backspace</span>
                 </div>
               </div>
             </Panel>
