@@ -190,8 +190,10 @@ const TriggerConfigModal = ({ isOpen, onClose, onSave, initialConfig }: any) => 
     platform: '',
     contentType: '',
     commentType: '',
-    keyword: '',
+    keywords: [],
   });
+  const [keywordInput, setKeywordInput] = useState('');
+  const [keywordError, setKeywordError] = useState('');
 
   if (!isOpen) return null;
 
@@ -213,8 +215,52 @@ const TriggerConfigModal = ({ isOpen, onClose, onSave, initialConfig }: any) => 
     { id: 'all', name: 'All Comments', icon: '💬' },
     { id: 'organic', name: 'Organic Only', icon: '🌱' },
     { id: 'ad', name: 'Ad Comments Only', icon: '📢' },
-    { id: 'keyword', name: 'Specific Keyword', icon: '🔑' },
+    { id: 'keyword', name: 'Specific Keywords', icon: '🔑' },
   ];
+
+  const addKeyword = () => {
+    const trimmed = keywordInput.trim().toLowerCase();
+
+    if (!trimmed) {
+      setKeywordError('Keyword cannot be empty');
+      return;
+    }
+
+    if (trimmed.length < 2) {
+      setKeywordError('Keyword must be at least 2 characters');
+      return;
+    }
+
+    if (trimmed.length > 50) {
+      setKeywordError('Keyword too long (max 50 characters)');
+      return;
+    }
+
+    if (config.keywords.includes(trimmed)) {
+      setKeywordError('Keyword already added');
+      return;
+    }
+
+    if (config.keywords.length >= 20) {
+      setKeywordError('Maximum 20 keywords allowed');
+      return;
+    }
+
+    setConfig({ ...config, keywords: [...config.keywords, trimmed] });
+    setKeywordInput('');
+    setKeywordError('');
+  };
+
+  const removeKeyword = (keyword: string) => {
+    setConfig({ ...config, keywords: config.keywords.filter((k: string) => k !== keyword) });
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addKeyword();
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
@@ -299,18 +345,75 @@ const TriggerConfigModal = ({ isOpen, onClose, onSave, initialConfig }: any) => 
             </div>
           )}
 
-          {/* Keyword Input */}
+          {/* Multiple Keywords Input */}
           {config.commentType === 'keyword' && (
             <div className="mb-8 animate-fadeIn">
-              <label className="block text-sm font-semibold mb-4 text-gray-700">4. Enter Keyword</label>
-              <input
-                type="text"
-                value={config.keyword}
-                onChange={(e) => setConfig({ ...config, keyword: e.target.value })}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 outline-none"
-                placeholder="e.g., buy, interested, price"
-              />
-              <p className="text-xs text-gray-500 mt-2">Enter the word that should trigger this automation</p>
+              <label className="block text-sm font-semibold mb-4 text-gray-700">4. Enter Trigger Keywords</label>
+              <div className="space-y-4">
+                {/* Input */}
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={keywordInput}
+                    onChange={(e) => {
+                      setKeywordInput(e.target.value);
+                      setKeywordError('');
+                    }}
+                    onKeyPress={handleKeyPress}
+                    className={`flex-1 px-4 py-3 border-2 rounded-lg focus:outline-none transition-all ${
+                      keywordError ? 'border-red-500 focus:border-red-600' : 'border-gray-300 focus:border-purple-500'
+                    }`}
+                    placeholder="e.g., buy, interested, price"
+                  />
+                  <Button
+                    onClick={addKeyword}
+                    type="button"
+                    className="bg-gradient-to-r from-purple-600 to-pink-600 px-6"
+                  >
+                    ➕ Add
+                  </Button>
+                </div>
+
+                {/* Error Message */}
+                {keywordError && (
+                  <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg">
+                    <span>⚠️</span>
+                    <span>{keywordError}</span>
+                  </div>
+                )}
+
+                {/* Keywords List */}
+                {config.keywords.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-gray-600 font-semibold">
+                        {config.keywords.length} keyword{config.keywords.length !== 1 ? 's' : ''} added (max 20)
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {config.keywords.map((keyword: string, idx: number) => (
+                        <div
+                          key={idx}
+                          className="group flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-lg hover:border-purple-400 transition-all"
+                        >
+                          <span className="font-semibold text-purple-700">🔑 {keyword}</span>
+                          <button
+                            onClick={() => removeKeyword(keyword)}
+                            className="text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity font-bold"
+                            title="Remove keyword"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <p className="text-xs text-gray-500">
+                  💡 Press Enter or click Add to include a keyword. Automation triggers when ANY keyword is found.
+                </p>
+              </div>
             </div>
           )}
 
@@ -408,9 +511,21 @@ const TriggerNode = ({ id, data, selected }: any) => (
             <span className="text-gray-500 font-medium">Type:</span>
             <span className="font-bold capitalize bg-green-100 px-3 py-1 rounded-full text-green-700">{data.config.commentType}</span>
           </div>
-          {data.config.keyword && (
+          {data.config.keywords && data.config.keywords.length > 0 && (
             <div className="mt-3 px-4 py-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border-2 border-purple-200">
-              <div className="text-xs text-purple-700 font-bold">🔑 Keyword: "{data.config.keyword}"</div>
+              <div className="text-xs text-purple-700 font-bold mb-2">🔑 Keywords ({data.config.keywords.length}):</div>
+              <div className="flex flex-wrap gap-1">
+                {data.config.keywords.slice(0, 3).map((kw: string, idx: number) => (
+                  <span key={idx} className="text-xs bg-purple-200 text-purple-800 px-2 py-1 rounded-full font-semibold">
+                    {kw}
+                  </span>
+                ))}
+                {data.config.keywords.length > 3 && (
+                  <span className="text-xs bg-purple-300 text-purple-900 px-2 py-1 rounded-full font-bold">
+                    +{data.config.keywords.length - 3} more
+                  </span>
+                )}
+              </div>
             </div>
           )}
         </div>

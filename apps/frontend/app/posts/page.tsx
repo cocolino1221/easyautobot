@@ -130,6 +130,9 @@ export default function PostsPage() {
               <Link href="/posts">
                 <Button variant="ghost" className="bg-purple-50 text-purple-700 hover:bg-purple-100">Posts</Button>
               </Link>
+              <Link href="/flows">
+                <Button variant="ghost" className="hover:bg-gray-100">Flows</Button>
+              </Link>
               <Link href="/integrations">
                 <Button variant="ghost" className="hover:bg-gray-100">Integrations</Button>
               </Link>
