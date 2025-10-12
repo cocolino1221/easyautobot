@@ -99,16 +99,63 @@ const NodeConfigPanel = ({ node, isOpen, onClose, onUpdate }: any) => {
           {/* Action Settings */}
           {node.type === 'action' && (
             <>
-              <div>
-                <label className="block text-sm font-semibold mb-2 text-gray-700">Message Template</label>
-                <textarea
-                  value={config.messageTemplate || ''}
-                  onChange={(e) => setConfig({ ...config, messageTemplate: e.target.value })}
-                  className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 outline-none resize-none"
-                  rows={4}
-                  placeholder="Enter message template..."
-                />
-              </div>
+              {config.actionType === 'send_voice_message' ? (
+                <>
+                  <div>
+                    <label className="block text-sm font-semibold mb-2 text-gray-700">Voice Message Audio</label>
+                    <div className="border-2 border-dashed border-purple-300 rounded-lg p-6 text-center bg-purple-50 hover:bg-purple-100 transition-colors cursor-pointer">
+                      <input
+                        type="file"
+                        accept="audio/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setConfig({ ...config, voiceFile: file.name, voiceSize: (file.size / 1024).toFixed(2) + ' KB' });
+                          }
+                        }}
+                        className="hidden"
+                        id="voice-upload"
+                      />
+                      <label htmlFor="voice-upload" className="cursor-pointer">
+                        <div className="text-4xl mb-2">🎤</div>
+                        <div className="text-sm font-semibold text-purple-700 mb-1">
+                          {config.voiceFile || 'Upload Voice Message'}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {config.voiceSize || 'Max 60 seconds • MP3, WAV, M4A'}
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+                  <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+                    <div className="flex items-start gap-3">
+                      <span className="text-2xl">💡</span>
+                      <div className="text-sm text-blue-900">
+                        <p className="font-semibold mb-1">Voice Message Tips:</p>
+                        <ul className="text-xs space-y-1 text-blue-700">
+                          <li>• Keep it under 60 seconds (TikTok/Instagram limit)</li>
+                          <li>• Use clear audio with no background noise</li>
+                          <li>• Record in a friendly, conversational tone</li>
+                          <li>• Include your brand name or call-to-action</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <label className="block text-sm font-semibold mb-2 text-gray-700">Message Template</label>
+                    <textarea
+                      value={config.messageTemplate || ''}
+                      onChange={(e) => setConfig({ ...config, messageTemplate: e.target.value })}
+                      className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 outline-none resize-none"
+                      rows={4}
+                      placeholder="Enter message template..."
+                    />
+                  </div>
+                </>
+              )}
               <div>
                 <label className="block text-sm font-semibold mb-2 text-gray-700">Delay (seconds)</label>
                 <input
@@ -632,7 +679,18 @@ const ActionNode = ({ id, data, selected }: any) => (
           Type: {data.actionType.replace('_', ' ').toUpperCase()}
         </div>
       )}
-      {data.messageTemplate && (
+      {data.actionType === 'send_voice_message' && data.voiceFile && (
+        <div className="mt-3 p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border-2 border-purple-200">
+          <div className="flex items-center gap-2 text-xs">
+            <span className="text-lg">🎤</span>
+            <div className="flex-1">
+              <div className="font-bold text-purple-700">{data.voiceFile}</div>
+              <div className="text-purple-600">{data.voiceSize || 'Audio file'}</div>
+            </div>
+          </div>
+        </div>
+      )}
+      {data.messageTemplate && data.actionType !== 'send_voice_message' && (
         <div className="mt-3 p-3 bg-gray-50 rounded-lg text-xs text-gray-600 italic border border-gray-200">
           "{data.messageTemplate.substring(0, 50)}{data.messageTemplate.length > 50 ? '...' : ''}"
         </div>
@@ -917,7 +975,8 @@ export default function FlowBuilderPage() {
       color: 'blue',
       icon: '⚙️',
       blocks: [
-        { type: 'action', label: 'Send Message', description: 'Send direct message', icon: '📤', actionType: 'send_message', status: 'active' },
+        { type: 'action', label: 'Send Message', description: 'Send text message', icon: '📤', actionType: 'send_message', status: 'active' },
+        { type: 'action', label: 'Send Voice Message', description: 'Auto-send voice note (60s)', icon: '🎤', actionType: 'send_voice_message', voiceDuration: '0s', status: 'active' },
         { type: 'action', label: 'Quick Replies', description: 'Send buttons (max 12)', icon: '🔘', actionType: 'quick_replies', quickReplies: ['Option 1', 'Option 2'], status: 'active' },
         { type: 'action', label: 'Reply Comment', description: 'Reply to comment', icon: '↩️', actionType: 'reply_comment', status: 'active' },
         { type: 'action', label: 'Auto-Reply', description: 'Send templated response', icon: '💬', actionType: 'auto_reply', status: 'active' },
