@@ -18,6 +18,7 @@ import {
   MarkerType,
   useReactFlow,
   ReactFlowProvider,
+  ConnectionLineType,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { Button } from '@/components/ui/button';
@@ -834,7 +835,7 @@ export default function FlowBuilderPage() {
   const [collapsedSections, setCollapsedSections] = useState<string[]>([]);
 
   // Connection line style state
-  const [connectionLineType, setConnectionLineType] = useState<'smoothstep' | 'straight' | 'step' | 'bezier'>('smoothstep');
+  const [connectionLineType, setConnectionLineType] = useState<ConnectionLineType>(ConnectionLineType.SmoothStep);
 
   // Connection validation - prevent invalid connections
   const isValidConnection = useCallback((connection: Connection | Edge) => {
@@ -1385,29 +1386,29 @@ export default function FlowBuilderPage() {
                 <label className="block text-xs font-bold text-gray-600 mb-2">Connection Style</label>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => setConnectionLineType('smoothstep')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${connectionLineType === 'smoothstep' ? 'bg-purple-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                    onClick={() => setConnectionLineType(ConnectionLineType.SmoothStep)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${connectionLineType === ConnectionLineType.SmoothStep ? 'bg-purple-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
                     title="Smooth curved lines"
                   >
                     Smooth
                   </button>
                   <button
-                    onClick={() => setConnectionLineType('bezier')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${connectionLineType === 'bezier' ? 'bg-purple-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                    onClick={() => setConnectionLineType(ConnectionLineType.Bezier)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${connectionLineType === ConnectionLineType.Bezier ? 'bg-purple-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
                     title="Bezier curves"
                   >
                     Curve
                   </button>
                   <button
-                    onClick={() => setConnectionLineType('step')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${connectionLineType === 'step' ? 'bg-purple-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                    onClick={() => setConnectionLineType(ConnectionLineType.Step)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${connectionLineType === ConnectionLineType.Step ? 'bg-purple-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
                     title="Step lines"
                   >
                     Step
                   </button>
                   <button
-                    onClick={() => setConnectionLineType('straight')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${connectionLineType === 'straight' ? 'bg-purple-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                    onClick={() => setConnectionLineType(ConnectionLineType.Straight)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${connectionLineType === ConnectionLineType.Straight ? 'bg-purple-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
                     title="Straight lines"
                   >
                     Straight
