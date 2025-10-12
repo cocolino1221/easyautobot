@@ -189,7 +189,7 @@ const TriggerConfigModal = ({ isOpen, onClose, onSave, initialConfig }: any) => 
   const [config, setConfig] = useState(initialConfig || {
     platform: '',
     contentType: '',
-    commentType: '',
+    interactionType: '',
     keywords: [],
   });
   const [keywordInput, setKeywordInput] = useState('');
@@ -204,19 +204,73 @@ const TriggerConfigModal = ({ isOpen, onClose, onSave, initialConfig }: any) => 
     { id: 'whatsapp', name: 'WhatsApp', icon: '💬', color: 'from-green-500 to-green-600' },
   ];
 
-  const contentTypes = [
-    { id: 'post', name: 'Post', icon: '📝' },
-    { id: 'story', name: 'Story', icon: '📸' },
-    { id: 'reel', name: 'Reel', icon: '🎬' },
-    { id: 'ad', name: 'Ad', icon: '📢' },
-  ];
+  // Platform-specific content types
+  const platformContentTypes: Record<string, any[]> = {
+    instagram: [
+      { id: 'post', name: 'Post', icon: '📝', desc: 'Regular Instagram posts' },
+      { id: 'story', name: 'Story', icon: '📸', desc: '24-hour stories' },
+      { id: 'reel', name: 'Reel', icon: '🎬', desc: 'Short-form videos' },
+      { id: 'carousel', name: 'Carousel', icon: '🎠', desc: 'Multiple images/videos' },
+      { id: 'live', name: 'Live', icon: '🔴', desc: 'Live broadcasts' },
+      { id: 'ad', name: 'Ad', icon: '📢', desc: 'Sponsored content' },
+    ],
+    facebook: [
+      { id: 'post', name: 'Post', icon: '📝', desc: 'Regular posts' },
+      { id: 'video', name: 'Video', icon: '🎥', desc: 'Video posts' },
+      { id: 'story', name: 'Story', icon: '📸', desc: '24-hour stories' },
+      { id: 'reel', name: 'Reel', icon: '🎬', desc: 'Short-form videos' },
+      { id: 'group', name: 'Group Post', icon: '👥', desc: 'Posts in groups' },
+      { id: 'marketplace', name: 'Marketplace', icon: '🛒', desc: 'Product listings' },
+      { id: 'ad', name: 'Ad', icon: '📢', desc: 'Sponsored content' },
+    ],
+    tiktok: [
+      { id: 'video', name: 'Video', icon: '🎥', desc: 'Regular TikTok videos' },
+      { id: 'duet', name: 'Duet', icon: '🎭', desc: 'Side-by-side videos' },
+      { id: 'stitch', name: 'Stitch', icon: '✂️', desc: 'Video remixes' },
+      { id: 'live', name: 'Live', icon: '🔴', desc: 'Live streams' },
+    ],
+    whatsapp: [
+      { id: 'message', name: 'Message', icon: '💬', desc: 'Direct messages' },
+      { id: 'broadcast', name: 'Broadcast', icon: '📡', desc: 'Bulk messages' },
+      { id: 'template', name: 'Template', icon: '📋', desc: 'Pre-approved templates' },
+    ],
+  };
 
-  const commentTypes = [
-    { id: 'all', name: 'All Comments', icon: '💬' },
-    { id: 'organic', name: 'Organic Only', icon: '🌱' },
-    { id: 'ad', name: 'Ad Comments Only', icon: '📢' },
-    { id: 'keyword', name: 'Specific Keywords', icon: '🔑' },
-  ];
+  // Platform-specific interaction types
+  const platformInteractionTypes: Record<string, any[]> = {
+    instagram: [
+      { id: 'all', name: 'All Comments', icon: '💬', desc: 'Respond to all comments' },
+      { id: 'organic', name: 'Organic Comments', icon: '🌱', desc: 'Non-ad comments only' },
+      { id: 'ad', name: 'Ad Comments', icon: '📢', desc: 'Ad comments only' },
+      { id: 'story_reply', name: 'Story Replies', icon: '💭', desc: 'Replies to stories' },
+      { id: 'keyword', name: 'Specific Keywords', icon: '🔑', desc: 'Keyword-based triggers' },
+    ],
+    facebook: [
+      { id: 'all', name: 'All Comments', icon: '💬', desc: 'Respond to all comments' },
+      { id: 'page', name: 'Page Comments', icon: '📄', desc: 'Page comments only' },
+      { id: 'group', name: 'Group Comments', icon: '👥', desc: 'Group comments only' },
+      { id: 'ad', name: 'Ad Comments', icon: '📢', desc: 'Ad comments only' },
+      { id: 'keyword', name: 'Specific Keywords', icon: '🔑', desc: 'Keyword-based triggers' },
+    ],
+    tiktok: [
+      { id: 'all', name: 'All Comments', icon: '💬', desc: 'Respond to all comments' },
+      { id: 'video', name: 'Video Comments', icon: '🎥', desc: 'Regular video comments' },
+      { id: 'duet', name: 'Duet Comments', icon: '🎭', desc: 'Comments on duets' },
+      { id: 'stitch', name: 'Stitch Comments', icon: '✂️', desc: 'Comments on stitches' },
+      { id: 'keyword', name: 'Specific Keywords', icon: '🔑', desc: 'Keyword-based triggers' },
+    ],
+    whatsapp: [
+      { id: 'individual', name: 'Individual Message', icon: '👤', desc: 'One-on-one messages' },
+      { id: 'group', name: 'Group Message', icon: '👥', desc: 'Group messages' },
+      { id: 'broadcast', name: 'Broadcast Reply', icon: '📡', desc: 'Replies to broadcasts' },
+      { id: 'template', name: 'Template Response', icon: '📋', desc: 'Template message replies' },
+      { id: 'button', name: 'Button Click', icon: '🔘', desc: 'Interactive button clicks' },
+      { id: 'keyword', name: 'Specific Keywords', icon: '🔑', desc: 'Keyword-based triggers' },
+    ],
+  };
+
+  const contentTypes = config.platform ? platformContentTypes[config.platform] || [] : [];
+  const interactionTypes = config.platform ? platformInteractionTypes[config.platform] || [] : [];
 
   const addKeyword = () => {
     const trimmed = keywordInput.trim().toLowerCase();
@@ -283,7 +337,7 @@ const TriggerConfigModal = ({ isOpen, onClose, onSave, initialConfig }: any) => 
               {platforms.map((platform) => (
                 <button
                   key={platform.id}
-                  onClick={() => setConfig({ ...config, platform: platform.id })}
+                  onClick={() => setConfig({ platform: platform.id, contentType: '', interactionType: '', keywords: [] })}
                   className={`p-5 rounded-xl border-2 transition-all transform hover:scale-105 ${
                     config.platform === platform.id
                       ? 'border-purple-500 bg-purple-50 shadow-lg scale-105'
@@ -298,46 +352,56 @@ const TriggerConfigModal = ({ isOpen, onClose, onSave, initialConfig }: any) => 
           </div>
 
           {/* Content Type Selection */}
-          {config.platform && (
+          {config.platform && contentTypes.length > 0 && (
             <div className="mb-8 animate-fadeIn">
-              <label className="block text-sm font-semibold mb-4 text-gray-700">2. Choose Content Type</label>
-              <div className="grid grid-cols-4 gap-3">
+              <label className="block text-sm font-semibold mb-4 text-gray-700">
+                2. Choose Content Type
+                <span className="ml-2 text-xs text-gray-500 font-normal">({contentTypes.length} types available)</span>
+              </label>
+              <div className={`grid ${contentTypes.length === 3 ? 'grid-cols-3' : contentTypes.length <= 4 ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'} gap-3`}>
                 {contentTypes.map((type) => (
                   <button
                     key={type.id}
-                    onClick={() => setConfig({ ...config, contentType: type.id })}
-                    className={`p-4 rounded-xl border-2 transition-all ${
+                    onClick={() => setConfig({ ...config, contentType: type.id, interactionType: '', keywords: [] })}
+                    className={`p-4 rounded-xl border-2 transition-all text-left hover:scale-105 ${
                       config.contentType === type.id
-                        ? 'border-purple-500 bg-purple-50 shadow-md'
+                        ? 'border-purple-500 bg-purple-50 shadow-md scale-105'
                         : 'border-gray-200 hover:border-purple-300'
                     }`}
                   >
                     <div className="text-3xl mb-2">{type.icon}</div>
-                    <div className="text-sm font-semibold">{type.name}</div>
+                    <div className="text-sm font-semibold mb-1">{type.name}</div>
+                    <div className="text-xs text-gray-500">{type.desc}</div>
                   </button>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Comment Type Selection */}
-          {config.contentType && (
+          {/* Interaction Type Selection */}
+          {config.contentType && interactionTypes.length > 0 && (
             <div className="mb-8 animate-fadeIn">
-              <label className="block text-sm font-semibold mb-4 text-gray-700">3. Filter Comments</label>
-              <div className="grid grid-cols-2 gap-3">
-                {commentTypes.map((type) => (
+              <label className="block text-sm font-semibold mb-4 text-gray-700">
+                3. Choose Trigger Type
+                <span className="ml-2 text-xs text-gray-500 font-normal">({interactionTypes.length} options)</span>
+              </label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {interactionTypes.map((type) => (
                   <button
                     key={type.id}
-                    onClick={() => setConfig({ ...config, commentType: type.id })}
-                    className={`p-4 rounded-xl border-2 transition-all text-left ${
-                      config.commentType === type.id
+                    onClick={() => setConfig({ ...config, interactionType: type.id, keywords: type.id === 'keyword' ? config.keywords : [] })}
+                    className={`p-4 rounded-xl border-2 transition-all text-left hover:scale-102 ${
+                      config.interactionType === type.id
                         ? 'border-purple-500 bg-purple-50 shadow-md'
                         : 'border-gray-200 hover:border-purple-300'
                     }`}
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-start gap-3">
                       <span className="text-2xl">{type.icon}</span>
-                      <span className="font-semibold">{type.name}</span>
+                      <div className="flex-1">
+                        <div className="font-semibold mb-1">{type.name}</div>
+                        <div className="text-xs text-gray-500">{type.desc}</div>
+                      </div>
                     </div>
                   </button>
                 ))}
@@ -346,7 +410,7 @@ const TriggerConfigModal = ({ isOpen, onClose, onSave, initialConfig }: any) => 
           )}
 
           {/* Multiple Keywords Input */}
-          {config.commentType === 'keyword' && (
+          {config.interactionType === 'keyword' && (
             <div className="mb-8 animate-fadeIn">
               <label className="block text-sm font-semibold mb-4 text-gray-700">4. Enter Trigger Keywords</label>
               <div className="space-y-4">
@@ -427,7 +491,7 @@ const TriggerConfigModal = ({ isOpen, onClose, onSave, initialConfig }: any) => 
                 onSave(config);
                 onClose();
               }}
-              disabled={!config.platform || !config.contentType || !config.commentType}
+              disabled={!config.platform || !config.contentType || !config.interactionType}
               className="bg-gradient-to-r from-purple-600 to-pink-600 px-8"
             >
               Save Configuration
@@ -508,8 +572,8 @@ const TriggerNode = ({ id, data, selected }: any) => (
             <span className="font-bold capitalize bg-blue-100 px-3 py-1 rounded-full text-blue-700">{data.config.contentType}</span>
           </div>
           <div className="flex items-center gap-2 text-sm">
-            <span className="text-gray-500 font-medium">Type:</span>
-            <span className="font-bold capitalize bg-green-100 px-3 py-1 rounded-full text-green-700">{data.config.commentType}</span>
+            <span className="text-gray-500 font-medium">Trigger:</span>
+            <span className="font-bold capitalize bg-green-100 px-3 py-1 rounded-full text-green-700">{data.config.interactionType?.replace('_', ' ')}</span>
           </div>
           {data.config.keywords && data.config.keywords.length > 0 && (
             <div className="mt-3 px-4 py-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border-2 border-purple-200">
