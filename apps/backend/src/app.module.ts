@@ -11,6 +11,7 @@ import { FlowModule } from './flow/flow.module';
 import { WebhookModule } from './webhook/webhook.module';
 import { BillingModule } from './billing/billing.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -35,5 +36,6 @@ import { AnalyticsModule } from './analytics/analytics.module';
     BillingModule,
     AnalyticsModule,
   ],
+  controllers: [AppController],
 })
 export class AppModule {}
