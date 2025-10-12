@@ -833,11 +833,52 @@ export default function FlowBuilderPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [collapsedSections, setCollapsedSections] = useState<string[]>([]);
 
+  // Connection line style state
+  const [connectionLineType, setConnectionLineType] = useState<'smoothstep' | 'straight' | 'step' | 'bezier'>('smoothstep');
+
+  // Connection validation - prevent invalid connections
+  const isValidConnection = useCallback((connection: Connection) => {
+    // Prevent self-connection
+    if (connection.source === connection.target) {
+      return false;
+    }
+
+    // Prevent duplicate connections
+    const existingConnection = edges.find(
+      edge => edge.source === connection.source && edge.target === connection.target
+    );
+    if (existingConnection) {
+      return false;
+    }
+
+    // Get source and target nodes
+    const sourceNode = nodes.find(n => n.id === connection.source);
+    const targetNode = nodes.find(n => n.id === connection.target);
+
+    // Trigger nodes can only connect to action, condition, or AI agent nodes
+    if (sourceNode?.type === 'trigger') {
+      return targetNode?.type === 'action' || targetNode?.type === 'aiAgent' || targetNode?.type === 'condition';
+    }
+
+    // Condition nodes must use specific handles (yes/no)
+    if (sourceNode?.type === 'condition') {
+      return connection.sourceHandle === 'yes' || connection.sourceHandle === 'no';
+    }
+
+    return true;
+  }, [nodes, edges]);
+
   const onConnect = useCallback(
     (connection: Connection) => {
+      // Validate connection
+      if (!isValidConnection(connection)) {
+        console.warn('Invalid connection attempted');
+        return;
+      }
+
       const newEdge = {
         ...connection,
-        type: 'smoothstep',
+        type: connectionLineType,
         animated: true,
         style: { stroke: '#9333ea', strokeWidth: 3 },
         markerEnd: { type: MarkerType.ArrowClosed, color: '#9333ea' },
@@ -849,7 +890,7 @@ export default function FlowBuilderPage() {
       };
       setEdges((eds) => addEdge(newEdge, eds));
     },
-    [setEdges]
+    [setEdges, connectionLineType, isValidConnection]
   );
 
   // Auto-arrange function - ManyChat inspired
@@ -1294,11 +1335,13 @@ export default function FlowBuilderPage() {
             onEdgesDelete={onEdgesDelete}
             onNodeClick={(_, node) => configureNode(node.id)}
             nodeTypes={nodeTypes}
+            isValidConnection={isValidConnection}
+            connectionLineType={connectionLineType}
             fitView
             className="bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50"
             deleteKeyCode={['Backspace', 'Delete']}
             defaultEdgeOptions={{
-              type: 'smoothstep',
+              type: connectionLineType,
               animated: true,
               style: { stroke: '#9333ea', strokeWidth: 3 },
             }}
@@ -1317,21 +1360,58 @@ export default function FlowBuilderPage() {
                 }
               }}
             />
-            <Panel position="top-right" className="flex gap-2 m-4">
-              <Button
-                onClick={autoArrange}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 text-white font-semibold px-4 py-2 rounded-xl"
-                title="Auto-arrange nodes (ManyChat style)"
-              >
-                <span className="mr-2">🎯</span>
-                Auto-Arrange
-              </Button>
+            <Panel position="top-right" className="flex flex-col gap-2 m-4">
+              <div className="flex gap-2">
+                <Button
+                  onClick={autoArrange}
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 text-white font-semibold px-4 py-2 rounded-xl"
+                  title="Auto-arrange nodes (ManyChat style)"
+                >
+                  <span className="mr-2">🎯</span>
+                  Auto-Arrange
+                </Button>
+                <div className="bg-white/95 backdrop-blur-lg px-4 py-3 rounded-xl shadow-lg border-2 border-gray-200">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                    <span>{nodes.length} Nodes</span>
+                    <span className="mx-2">|</span>
+                    <span>{edges.length} Connections</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Connection Line Style Selector */}
               <div className="bg-white/95 backdrop-blur-lg px-4 py-3 rounded-xl shadow-lg border-2 border-gray-200">
-                <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-                  <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                  <span>{nodes.length} Nodes</span>
-                  <span className="mx-2">|</span>
-                  <span>{edges.length} Connections</span>
+                <label className="block text-xs font-bold text-gray-600 mb-2">Connection Style</label>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setConnectionLineType('smoothstep')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${connectionLineType === 'smoothstep' ? 'bg-purple-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                    title="Smooth curved lines"
+                  >
+                    Smooth
+                  </button>
+                  <button
+                    onClick={() => setConnectionLineType('bezier')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${connectionLineType === 'bezier' ? 'bg-purple-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                    title="Bezier curves"
+                  >
+                    Curve
+                  </button>
+                  <button
+                    onClick={() => setConnectionLineType('step')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${connectionLineType === 'step' ? 'bg-purple-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                    title="Step lines"
+                  >
+                    Step
+                  </button>
+                  <button
+                    onClick={() => setConnectionLineType('straight')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${connectionLineType === 'straight' ? 'bg-purple-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                    title="Straight lines"
+                  >
+                    Straight
+                  </button>
                 </div>
               </div>
             </Panel>
