@@ -833,6 +833,7 @@ export default function FlowBuilderPage() {
   const [configPanelNode, setConfigPanelNode] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [collapsedSections, setCollapsedSections] = useState<string[]>([]);
+  const [showProTips, setShowProTips] = useState(true);
 
   // Connection line style state
   const [connectionLineType, setConnectionLineType] = useState<ConnectionLineType>(ConnectionLineType.SmoothStep);
@@ -1153,6 +1154,34 @@ export default function FlowBuilderPage() {
     );
   };
 
+  // Load existing flow data
+  useEffect(() => {
+    const loadFlow = async () => {
+      if (params.id && params.id !== 'new') {
+        try {
+          const response = await api.get(`/api/v1/flows/${params.id}`);
+          const flowData = response.data;
+
+          if (flowData.name) {
+            setFlowName(flowData.name);
+          }
+
+          if (flowData.nodes && Array.isArray(flowData.nodes)) {
+            setNodes(flowData.nodes);
+          }
+
+          if (flowData.edges && Array.isArray(flowData.edges)) {
+            setEdges(flowData.edges);
+          }
+        } catch (error) {
+          console.error('Failed to load flow', error);
+        }
+      }
+    };
+
+    loadFlow();
+  }, [params.id]);
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Delete' || event.key === 'Backspace') {
@@ -1416,15 +1445,24 @@ export default function FlowBuilderPage() {
                 </div>
               </div>
             </Panel>
-            <Panel position="top-center" className="bg-gradient-to-r from-purple-500/90 to-pink-500/90 backdrop-blur-lg px-8 py-4 rounded-2xl shadow-2xl border-2 border-white/20 m-4">
-              <div className="text-sm text-white flex items-center gap-3 font-semibold">
-                <span className="text-2xl animate-pulse">💡</span>
-                <div>
-                  <strong className="block">Pro Tips:</strong>
-                  <span className="text-xs opacity-90">Drag blocks from sidebar • Click nodes to configure • Auto-arrange for clean layout • Connect with handles • Delete with Backspace</span>
+            {showProTips && (
+              <Panel position="top-center" className="bg-gradient-to-r from-purple-500/90 to-pink-500/90 backdrop-blur-lg px-8 py-4 rounded-2xl shadow-2xl border-2 border-white/20 m-4">
+                <div className="text-sm text-white flex items-center gap-3 font-semibold">
+                  <span className="text-2xl animate-pulse">💡</span>
+                  <div className="flex-1">
+                    <strong className="block">Pro Tips:</strong>
+                    <span className="text-xs opacity-90">Drag blocks from sidebar • Click nodes to configure • Auto-arrange for clean layout • Connect with handles • Delete with Backspace</span>
+                  </div>
+                  <button
+                    onClick={() => setShowProTips(false)}
+                    className="ml-4 w-6 h-6 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 transition-all text-white font-bold"
+                    title="Close tips"
+                  >
+                    ✕
+                  </button>
                 </div>
-              </div>
-            </Panel>
+              </Panel>
+            )}
           </ReactFlow>
         </div>
       </div>
