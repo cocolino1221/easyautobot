@@ -1,17 +1,21 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Toast } from '@/components/ui/toast';
 
 export default function SettingsPage() {
+  const router = useRouter();
   const [tenant, setTenant] = useState<any>(null);
+  const [user, setUser] = useState<any>(null);
   const [members, setMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('workspace');
+  const [activeTab, setActiveTab] = useState('account');
   const [workspaceName, setWorkspaceName] = useState('');
+  const [userName, setUserName] = useState('');
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -24,6 +28,14 @@ export default function SettingsPage() {
 
   const fetchData = async () => {
     try {
+      // Get user from localStorage
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const userData = JSON.parse(userStr);
+        setUser(userData);
+        setUserName(userData.name || '');
+      }
+
       const [tenantResponse, membersResponse] = await Promise.all([
         api.get('/api/v1/tenant'),
         api.get('/api/v1/tenant/members'),
@@ -113,6 +125,42 @@ export default function SettingsPage() {
     }
   };
 
+  const saveAccountSettings = async () => {
+    setSaving(true);
+    try {
+      // Update user name in localStorage
+      if (user) {
+        const updatedUser = { ...user, name: userName };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        setUser(updatedUser);
+      }
+      showToast('✅ Account settings saved successfully!', 'success');
+    } catch (error: any) {
+      showToast('❌ Failed to save account settings', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleLogout = () => {
+    if (confirm('Are you sure you want to log out?')) {
+      // Clear localStorage
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('user');
+
+      // Clear cookie
+      document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; samesite=strict';
+
+      // Show toast
+      showToast('👋 Logged out successfully', 'success');
+
+      // Redirect to signin after a brief delay
+      setTimeout(() => {
+        router.push('/signin');
+      }, 500);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -138,6 +186,16 @@ export default function SettingsPage() {
           <div className="w-64">
             <nav className="space-y-1">
               <button
+                onClick={() => setActiveTab('account')}
+                className={`w-full text-left px-4 py-2 rounded-lg ${
+                  activeTab === 'account'
+                    ? 'bg-blue-50 text-blue-700 font-medium'
+                    : 'hover:bg-gray-100'
+                }`}
+              >
+                👤 Account
+              </button>
+              <button
                 onClick={() => setActiveTab('workspace')}
                 className={`w-full text-left px-4 py-2 rounded-lg ${
                   activeTab === 'workspace'
@@ -145,7 +203,7 @@ export default function SettingsPage() {
                     : 'hover:bg-gray-100'
                 }`}
               >
-                Workspace
+                🏢 Workspace
               </button>
               <button
                 onClick={() => setActiveTab('team')}
@@ -155,7 +213,7 @@ export default function SettingsPage() {
                     : 'hover:bg-gray-100'
                 }`}
               >
-                Team Members
+                👥 Team Members
               </button>
               <button
                 onClick={() => setActiveTab('billing')}
@@ -165,7 +223,7 @@ export default function SettingsPage() {
                     : 'hover:bg-gray-100'
                 }`}
               >
-                Billing & Plan
+                💳 Billing & Plan
               </button>
               <button
                 onClick={() => setActiveTab('api')}
@@ -175,7 +233,7 @@ export default function SettingsPage() {
                     : 'hover:bg-gray-100'
                 }`}
               >
-                API Keys
+                🔑 API Keys
               </button>
             </nav>
           </div>
@@ -186,6 +244,100 @@ export default function SettingsPage() {
               <div className="bg-white rounded-lg shadow p-6">Loading...</div>
             ) : (
               <>
+                {/* Account Tab */}
+                {activeTab === 'account' && (
+                  <div className="bg-white rounded-lg shadow p-6">
+                    <h2 className="text-lg font-semibold mb-6">Account Settings</h2>
+
+                    {/* User Profile */}
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-4 pb-6 border-b">
+                        <div className="w-20 h-20 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center text-white text-3xl font-bold shadow-lg">
+                          {userName?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || '?'}
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-900">{userName || user?.name || 'User'}</h3>
+                          <p className="text-gray-600">{user?.email}</p>
+                          <span className="inline-block mt-1 px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-700">
+                            {user?.role || 'AGENT'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Account Details */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Full Name
+                        </label>
+                        <input
+                          type="text"
+                          value={userName}
+                          onChange={(e) => setUserName(e.target.value)}
+                          className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Your full name"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Email Address
+                        </label>
+                        <input
+                          type="email"
+                          value={user?.email || ''}
+                          disabled
+                          className="w-full px-4 py-2 border rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Account ID
+                        </label>
+                        <input
+                          type="text"
+                          value={user?.id || ''}
+                          disabled
+                          className="w-full px-4 py-2 border rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed font-mono text-sm"
+                        />
+                      </div>
+
+                      <div className="pt-4 border-t">
+                        <Button
+                          className="w-full sm:w-auto"
+                          onClick={saveAccountSettings}
+                          disabled={saving}
+                        >
+                          {saving ? 'Saving...' : '💾 Save Changes'}
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Danger Zone */}
+                    <div className="mt-8 pt-6 border-t">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Session & Security</h3>
+                      <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h4 className="font-semibold text-red-900 mb-1">Log Out</h4>
+                            <p className="text-sm text-red-700">
+                              Sign out of your account on this device
+                            </p>
+                          </div>
+                          <Button
+                            variant="outline"
+                            className="bg-red-600 hover:bg-red-700 text-white border-red-600 hover:border-red-700"
+                            onClick={handleLogout}
+                          >
+                            🚪 Log Out
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Workspace Tab */}
                 {activeTab === 'workspace' && (
                   <div className="bg-white rounded-lg shadow p-6">
