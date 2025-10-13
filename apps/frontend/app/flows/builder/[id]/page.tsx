@@ -189,7 +189,7 @@ const NodeConfigPanel = ({ node, isOpen, onClose, onUpdate }: any) => {
                         rows={5}
                         placeholder="Hi {{first_name}}! 👋\n\nThanks for reaching out..."
                       />
-                      <p className="text-xs text-gray-500 mt-1">Use {{'{{'}}first_name{{'}}'}}, {{'{{'}}last_name{{'}}'}}, etc. for personalization</p>
+                      <p className="text-xs text-gray-500 mt-1">Use variables like {`{{first_name}}, {{last_name}}`} for personalization</p>
                     </div>
                   </>
                 )}
