@@ -25,9 +25,10 @@ import { Button } from '@/components/ui/button';
 import { useParams, useRouter } from 'next/navigation';
 import api from '@/lib/api';
 
-// Node Configuration Side Panel
+// Node Configuration Side Panel with Tabs
 const NodeConfigPanel = ({ node, isOpen, onClose, onUpdate }: any) => {
   const [config, setConfig] = useState(node?.data || {});
+  const [activeTab, setActiveTab] = useState<'content' | 'settings' | 'advanced'>('content');
 
   if (!isOpen || !node) return null;
 
@@ -36,197 +37,308 @@ const NodeConfigPanel = ({ node, isOpen, onClose, onUpdate }: any) => {
     onClose();
   };
 
+  const tabs = [
+    { id: 'content', label: 'Content', icon: '📝' },
+    { id: 'settings', label: 'Settings', icon: '⚙️' },
+    { id: 'advanced', label: 'Advanced', icon: '🔧' },
+  ];
+
   return (
-    <div className="fixed right-0 top-0 h-full w-96 bg-white border-l-2 border-gray-200 shadow-2xl z-50 transform transition-transform duration-300 ease-in-out overflow-y-auto">
-      <div className="p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold">Configure Node</h3>
+    <div className="fixed right-0 top-0 h-full w-96 bg-white border-l-2 border-gray-200 shadow-2xl z-50 transform transition-transform duration-300 ease-in-out overflow-hidden flex flex-col">
+      {/* Header */}
+      <div className="p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-xl font-bold text-gray-900">Configure Node</h3>
+            <p className="text-sm text-gray-500 mt-1">{config.label || 'Unnamed Node'}</p>
+          </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl">×</button>
         </div>
 
-        <div className="space-y-6">
-          {/* Node Name */}
-          <div>
-            <label className="block text-sm font-semibold mb-2 text-gray-700">Node Name</label>
-            <input
-              type="text"
-              value={config.label || ''}
-              onChange={(e) => setConfig({ ...config, label: e.target.value })}
-              className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 outline-none"
-              placeholder="Enter node name"
-            />
-          </div>
+        {/* Tabs */}
+        <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`flex-1 px-3 py-2 rounded-md text-xs font-medium transition-all ${
+                activeTab === tab.id
+                  ? 'bg-white text-purple-700 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <span className="mr-1">{tab.icon}</span>
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
-          {/* Description */}
-          <div>
-            <label className="block text-sm font-semibold mb-2 text-gray-700">Description</label>
-            <textarea
-              value={config.description || ''}
-              onChange={(e) => setConfig({ ...config, description: e.target.value })}
-              className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 outline-none resize-none"
-              rows={3}
-              placeholder="Enter description"
-            />
-          </div>
+      {/* Tab Content */}
+      <div className="flex-1 overflow-y-auto p-6">
+        {activeTab === 'content' && (
+          <div className="space-y-6">
+            {/* Node Name */}
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-gray-700">Node Name</label>
+              <input
+                type="text"
+                value={config.label || ''}
+                onChange={(e) => setConfig({ ...config, label: e.target.value })}
+                className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 outline-none"
+                placeholder="Enter node name"
+              />
+            </div>
 
-          {/* AI Agent Settings */}
-          {node.type === 'aiAgent' && (
-            <>
-              <div>
-                <label className="block text-sm font-semibold mb-2 text-gray-700">AI Model</label>
-                <select
-                  value={config.aiModel || 'gpt-4'}
-                  onChange={(e) => setConfig({ ...config, aiModel: e.target.value })}
-                  className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 outline-none"
-                >
-                  <option value="gpt-4">GPT-4</option>
-                  <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                  <option value="claude-3">Claude 3</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold mb-2 text-gray-700">System Prompt</label>
-                <textarea
-                  value={config.systemPrompt || ''}
-                  onChange={(e) => setConfig({ ...config, systemPrompt: e.target.value })}
-                  className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 outline-none resize-none"
-                  rows={4}
-                  placeholder="Enter system prompt..."
-                />
-              </div>
-            </>
-          )}
+            {/* Description */}
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-gray-700">Description</label>
+              <textarea
+                value={config.description || ''}
+                onChange={(e) => setConfig({ ...config, description: e.target.value })}
+                className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 outline-none resize-none"
+                rows={3}
+                placeholder="Enter description"
+              />
+            </div>
 
-          {/* Action Settings */}
-          {node.type === 'action' && (
-            <>
-              {config.actionType === 'send_voice_message' ? (
-                <>
-                  <div>
-                    <label className="block text-sm font-semibold mb-2 text-gray-700">Voice Message Audio</label>
-                    <div className="border-2 border-dashed border-purple-300 rounded-lg p-6 text-center bg-purple-50 hover:bg-purple-100 transition-colors cursor-pointer">
-                      <input
-                        type="file"
-                        accept="audio/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            setConfig({ ...config, voiceFile: file.name, voiceSize: (file.size / 1024).toFixed(2) + ' KB' });
-                          }
-                        }}
-                        className="hidden"
-                        id="voice-upload"
-                      />
-                      <label htmlFor="voice-upload" className="cursor-pointer">
-                        <div className="text-4xl mb-2">🎤</div>
-                        <div className="text-sm font-semibold text-purple-700 mb-1">
-                          {config.voiceFile || 'Upload Voice Message'}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {config.voiceSize || 'Max 60 seconds • MP3, WAV, M4A'}
-                        </div>
-                      </label>
-                    </div>
-                  </div>
-                  <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
-                    <div className="flex items-start gap-3">
-                      <span className="text-2xl">💡</span>
-                      <div className="text-sm text-blue-900">
-                        <p className="font-semibold mb-1">Voice Message Tips:</p>
-                        <ul className="text-xs space-y-1 text-blue-700">
-                          <li>• Keep it under 60 seconds (TikTok/Instagram limit)</li>
-                          <li>• Use clear audio with no background noise</li>
-                          <li>• Record in a friendly, conversational tone</li>
-                          <li>• Include your brand name or call-to-action</li>
-                        </ul>
+            {/* AI Agent Settings */}
+            {node.type === 'aiAgent' && (
+              <>
+                <div>
+                  <label className="block text-sm font-semibold mb-2 text-gray-700">AI Model</label>
+                  <select
+                    value={config.aiModel || 'gpt-4'}
+                    onChange={(e) => setConfig({ ...config, aiModel: e.target.value })}
+                    className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 outline-none"
+                  >
+                    <option value="gpt-4">GPT-4 (Most Capable)</option>
+                    <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Fast)</option>
+                    <option value="claude-3.5-sonnet">Claude 3.5 Sonnet (Best)</option>
+                    <option value="claude-3-haiku">Claude 3 Haiku (Fastest)</option>
+                    <option value="gemini-pro">Gemini Pro (Google)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-2 text-gray-700">System Prompt</label>
+                  <textarea
+                    value={config.systemPrompt || ''}
+                    onChange={(e) => setConfig({ ...config, systemPrompt: e.target.value })}
+                    className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 outline-none resize-none font-mono text-sm"
+                    rows={6}
+                    placeholder="You are a helpful assistant that..."
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Define the AI's role and behavior</p>
+                </div>
+              </>
+            )}
+
+            {/* Action Settings */}
+            {node.type === 'action' && (
+              <>
+                {config.actionType === 'send_voice_message' ? (
+                  <>
+                    <div>
+                      <label className="block text-sm font-semibold mb-2 text-gray-700">Voice Message Audio</label>
+                      <div className="border-2 border-dashed border-purple-300 rounded-lg p-6 text-center bg-purple-50 hover:bg-purple-100 transition-colors cursor-pointer">
+                        <input
+                          type="file"
+                          accept="audio/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setConfig({ ...config, voiceFile: file.name, voiceSize: (file.size / 1024).toFixed(2) + ' KB' });
+                            }
+                          }}
+                          className="hidden"
+                          id="voice-upload"
+                        />
+                        <label htmlFor="voice-upload" className="cursor-pointer">
+                          <div className="text-4xl mb-2">🎤</div>
+                          <div className="text-sm font-semibold text-purple-700 mb-1">
+                            {config.voiceFile || 'Upload Voice Message'}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {config.voiceSize || 'Max 60 seconds • MP3, WAV, M4A'}
+                          </div>
+                        </label>
                       </div>
                     </div>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div>
-                    <label className="block text-sm font-semibold mb-2 text-gray-700">Message Template</label>
-                    <textarea
-                      value={config.messageTemplate || ''}
-                      onChange={(e) => setConfig({ ...config, messageTemplate: e.target.value })}
-                      className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 outline-none resize-none"
-                      rows={4}
-                      placeholder="Enter message template..."
-                    />
-                  </div>
-                </>
-              )}
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                      <div className="flex items-start gap-2">
+                        <span className="text-lg">💡</span>
+                        <div className="text-xs text-blue-900">
+                          <p className="font-semibold mb-1">Tips:</p>
+                          <ul className="space-y-0.5 text-blue-700">
+                            <li>• Under 60 seconds</li>
+                            <li>• Clear audio, no noise</li>
+                            <li>• Friendly tone</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div>
+                      <label className="block text-sm font-semibold mb-2 text-gray-700">Message Template</label>
+                      <textarea
+                        value={config.messageTemplate || ''}
+                        onChange={(e) => setConfig({ ...config, messageTemplate: e.target.value })}
+                        className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 outline-none resize-none"
+                        rows={5}
+                        placeholder="Hi {{first_name}}! 👋\n\nThanks for reaching out..."
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Use {{'{{'}}first_name{{'}}'}}, {{'{{'}}last_name{{'}}'}}, etc. for personalization</p>
+                    </div>
+                  </>
+                )}
+              </>
+            )}
+
+            {/* Condition Settings */}
+            {node.type === 'condition' && (
+              <>
+                <div>
+                  <label className="block text-sm font-semibold mb-2 text-gray-700">Condition Type</label>
+                  <select
+                    value={config.conditionType || 'contains'}
+                    onChange={(e) => setConfig({ ...config, conditionType: e.target.value })}
+                    className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 outline-none"
+                  >
+                    <option value="contains">Contains</option>
+                    <option value="equals">Equals</option>
+                    <option value="starts_with">Starts With</option>
+                    <option value="regex">Regex</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-2 text-gray-700">Value to Check</label>
+                  <input
+                    type="text"
+                    value={config.checkValue || ''}
+                    onChange={(e) => setConfig({ ...config, checkValue: e.target.value })}
+                    className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 outline-none"
+                    placeholder="Enter value..."
+                  />
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'settings' && (
+          <div className="space-y-6">
+            {/* Node Status */}
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-gray-700">Node Status</label>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setConfig({ ...config, status: 'active' })}
+                  className={`flex-1 px-4 py-2 rounded-lg border-2 transition-all ${
+                    config.status === 'active' ? 'bg-green-50 border-green-500 text-green-700' : 'border-gray-200'
+                  }`}
+                >
+                  ✅ Active
+                </button>
+                <button
+                  onClick={() => setConfig({ ...config, status: 'paused' })}
+                  className={`flex-1 px-4 py-2 rounded-lg border-2 transition-all ${
+                    config.status === 'paused' ? 'bg-yellow-50 border-yellow-500 text-yellow-700' : 'border-gray-200'
+                  }`}
+                >
+                  ⏸️ Paused
+                </button>
+              </div>
+            </div>
+
+            {/* Delay Settings for Actions */}
+            {node.type === 'action' && (
               <div>
-                <label className="block text-sm font-semibold mb-2 text-gray-700">Delay (seconds)</label>
+                <label className="block text-sm font-semibold mb-2 text-gray-700">Send Delay (seconds)</label>
                 <input
                   type="number"
                   value={config.delay || 0}
                   onChange={(e) => setConfig({ ...config, delay: parseInt(e.target.value) })}
                   className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 outline-none"
                   min="0"
+                  placeholder="0"
                 />
+                <p className="text-xs text-gray-500 mt-1">Wait time before sending this message</p>
               </div>
-            </>
-          )}
+            )}
 
-          {/* Condition Settings */}
-          {node.type === 'condition' && (
-            <>
-              <div>
-                <label className="block text-sm font-semibold mb-2 text-gray-700">Condition Type</label>
-                <select
-                  value={config.conditionType || 'contains'}
-                  onChange={(e) => setConfig({ ...config, conditionType: e.target.value })}
-                  className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 outline-none"
-                >
-                  <option value="contains">Contains</option>
-                  <option value="equals">Equals</option>
-                  <option value="starts_with">Starts With</option>
-                  <option value="regex">Regex</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold mb-2 text-gray-700">Value to Check</label>
-                <input
-                  type="text"
-                  value={config.checkValue || ''}
-                  onChange={(e) => setConfig({ ...config, checkValue: e.target.value })}
-                  className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 outline-none"
-                  placeholder="Enter value..."
-                />
-              </div>
-            </>
-          )}
-
-          {/* Node Status */}
-          <div>
-            <label className="block text-sm font-semibold mb-2 text-gray-700">Status</label>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setConfig({ ...config, status: 'active' })}
-                className={`flex-1 px-4 py-2 rounded-lg border-2 transition-all ${
-                  config.status === 'active' ? 'bg-green-50 border-green-500 text-green-700' : 'border-gray-200'
-                }`}
+            {/* Priority */}
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-gray-700">Priority</label>
+              <select
+                value={config.priority || 'normal'}
+                onChange={(e) => setConfig({ ...config, priority: e.target.value })}
+                className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 outline-none"
               >
-                ✅ Active
-              </button>
-              <button
-                onClick={() => setConfig({ ...config, status: 'paused' })}
-                className={`flex-1 px-4 py-2 rounded-lg border-2 transition-all ${
-                  config.status === 'paused' ? 'bg-yellow-50 border-yellow-500 text-yellow-700' : 'border-gray-200'
-                }`}
-              >
-                ⏸️ Paused
-              </button>
+                <option value="low">Low - Process when available</option>
+                <option value="normal">Normal - Standard processing</option>
+                <option value="high">High - Process immediately</option>
+              </select>
             </div>
           </div>
-        </div>
+        )}
 
-        <div className="mt-8 flex gap-3">
+        {activeTab === 'advanced' && (
+          <div className="space-y-6">
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <h4 className="font-semibold text-sm text-gray-900 mb-3">Advanced Settings</h4>
+
+              {/* Error Handling */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2 text-gray-700">On Error</label>
+                <select
+                  value={config.errorHandling || 'continue'}
+                  onChange={(e) => setConfig({ ...config, errorHandling: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-purple-500 outline-none text-sm"
+                >
+                  <option value="continue">Continue to next node</option>
+                  <option value="retry">Retry 3 times</option>
+                  <option value="stop">Stop flow execution</option>
+                  <option value="notify">Notify admin and continue</option>
+                </select>
+              </div>
+
+              {/* Tracking */}
+              <div>
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={config.trackAnalytics !== false}
+                    onChange={(e) => setConfig({ ...config, trackAnalytics: e.target.checked })}
+                    className="w-4 h-4 text-purple-600 focus:ring-purple-500 rounded"
+                  />
+                  <span className="text-gray-700">Track in analytics</span>
+                </label>
+              </div>
+            </div>
+
+            {/* Custom Notes */}
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-gray-700">Internal Notes</label>
+              <textarea
+                value={config.notes || ''}
+                onChange={(e) => setConfig({ ...config, notes: e.target.value })}
+                className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 outline-none resize-none"
+                rows={4}
+                placeholder="Notes for your team (not visible to users)..."
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Footer with Action Buttons */}
+      <div className="p-6 border-t border-gray-200 bg-gray-50">
+        <div className="flex gap-3">
           <Button variant="outline" onClick={onClose} className="flex-1">Cancel</Button>
-          <Button onClick={handleSave} className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600">
-            Save Changes
+          <Button onClick={handleSave} className="flex-1 bg-purple-600 hover:bg-purple-700">
+            💾 Save Changes
           </Button>
         </div>
       </div>
