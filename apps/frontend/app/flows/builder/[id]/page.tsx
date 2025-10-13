@@ -698,22 +698,31 @@ const NodeWrapper = ({ children, id, onDuplicate, onDelete, onConfigure, selecte
 );
 
 const TriggerNode = ({ id, data, selected }: any) => {
-  const [showAddMenu, setShowAddMenu] = useState(false);
-
   const deleteNode = () => {
     const event = new CustomEvent('deleteNode', { detail: { id } });
     window.dispatchEvent(event);
   };
 
-  const addNodeAfter = (blockType: string) => {
-    const event = new CustomEvent('addNodeAfter', { detail: { sourceNodeId: id, blockType } });
-    window.dispatchEvent(event);
-    setShowAddMenu(false);
-  };
-
   return (
     <div className={`relative bg-white rounded-lg shadow-md border ${selected ? 'border-purple-500 shadow-lg' : 'border-gray-300'} transition-all w-[280px] group`}>
       <Handle type="source" position={Position.Bottom} className="w-3 h-3 bg-purple-500 border-2 border-white" />
+
+      {/* Add Connection Handle - styled as plus button */}
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        id="add-connection"
+        className="!w-6 !h-6 !bg-purple-600 hover:!bg-purple-700 !border-2 !border-white !rounded-full !shadow-md !-bottom-3 !left-1/2 !-translate-x-1/2 !opacity-0 group-hover:!opacity-100 !transition-all !cursor-crosshair"
+        style={{
+          width: '24px',
+          height: '24px',
+          bottom: '-12px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+        }}
+      >
+        <span className="absolute inset-0 flex items-center justify-center text-white text-sm font-bold pointer-events-none">+</span>
+      </Handle>
 
       {/* Delete Button */}
       {selected && (
@@ -727,37 +736,6 @@ const TriggerNode = ({ id, data, selected }: any) => {
         >
           ✕
         </button>
-      )}
-
-      {/* Add Node Button */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          setShowAddMenu(!showAddMenu);
-        }}
-        className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-6 h-6 bg-purple-600 hover:bg-purple-700 text-white rounded-full flex items-center justify-center text-sm shadow-md z-10 transition-all opacity-0 group-hover:opacity-100"
-        title="Add node"
-      >
-        +
-      </button>
-
-      {/* Add Node Menu */}
-      {showAddMenu && (
-        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-8 bg-white border-2 border-gray-200 rounded-lg shadow-xl py-2 min-w-[200px] z-50">
-          <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase">Add Next Step</div>
-          <button onClick={() => addNodeAfter('action')} className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2">
-            <span>💬</span> Send Message
-          </button>
-          <button onClick={() => addNodeAfter('aiAgent')} className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2">
-            <span>🤖</span> AI Response
-          </button>
-          <button onClick={() => addNodeAfter('condition')} className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2">
-            <span>❓</span> Condition
-          </button>
-          <button onClick={() => addNodeAfter('delay')} className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2">
-            <span>⏰</span> Delay
-          </button>
-        </div>
       )}
 
       {/* Header */}
@@ -812,23 +790,32 @@ const TriggerNode = ({ id, data, selected }: any) => {
 };
 
 const ActionNode = ({ id, data, selected }: any) => {
-  const [showAddMenu, setShowAddMenu] = useState(false);
-
   const deleteNode = () => {
     const event = new CustomEvent('deleteNode', { detail: { id } });
     window.dispatchEvent(event);
-  };
-
-  const addNodeAfter = (blockType: string) => {
-    const event = new CustomEvent('addNodeAfter', { detail: { sourceNodeId: id, blockType } });
-    window.dispatchEvent(event);
-    setShowAddMenu(false);
   };
 
   return (
     <div className={`relative bg-white rounded-lg shadow-md border ${selected ? 'border-blue-500 shadow-lg' : 'border-gray-300'} transition-all w-[280px] group`}>
       <Handle type="target" position={Position.Top} className="w-3 h-3 bg-blue-500 border-2 border-white" />
       <Handle type="source" position={Position.Bottom} className="w-3 h-3 bg-blue-500 border-2 border-white" />
+
+      {/* Add Connection Handle - styled as plus button */}
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        id="add-connection"
+        className="!w-6 !h-6 !bg-blue-600 hover:!bg-blue-700 !border-2 !border-white !rounded-full !shadow-md !-bottom-3 !left-1/2 !-translate-x-1/2 !opacity-0 group-hover:!opacity-100 !transition-all !cursor-crosshair"
+        style={{
+          width: '24px',
+          height: '24px',
+          bottom: '-12px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+        }}
+      >
+        <span className="absolute inset-0 flex items-center justify-center text-white text-sm font-bold pointer-events-none">+</span>
+      </Handle>
 
       {/* Delete Button */}
       {selected && (
@@ -844,37 +831,7 @@ const ActionNode = ({ id, data, selected }: any) => {
         </button>
       )}
 
-      {/* Add Node Button */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          setShowAddMenu(!showAddMenu);
-        }}
-        className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-6 h-6 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center text-sm shadow-md z-10 transition-all opacity-0 group-hover:opacity-100"
-        title="Add node"
-      >
-        +
-      </button>
-
-      {/* Add Node Menu */}
-      {showAddMenu && (
-        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-8 bg-white border-2 border-gray-200 rounded-lg shadow-xl py-2 min-w-[200px] z-50">
-          <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase">Add Next Step</div>
-          <button onClick={() => addNodeAfter('action')} className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2">
-            <span>💬</span> Send Message
-          </button>
-          <button onClick={() => addNodeAfter('aiAgent')} className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2">
-            <span>🤖</span> AI Response
-          </button>
-          <button onClick={() => addNodeAfter('condition')} className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2">
-            <span>❓</span> Condition
-          </button>
-          <button onClick={() => addNodeAfter('delay')} className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2">
-            <span>⏰</span> Delay
-          </button>
-        </div>
-      )}
-
+      {/* Header */}
       <div className="bg-blue-500 px-3 py-2 rounded-t-lg flex items-center gap-2">
         <span className="text-lg">{data.icon || '💬'}</span>
         <div className="text-white flex-1">
@@ -907,23 +864,32 @@ const ActionNode = ({ id, data, selected }: any) => {
 };
 
 const AIAgentNode = ({ id, data, selected }: any) => {
-  const [showAddMenu, setShowAddMenu] = useState(false);
-
   const deleteNode = () => {
     const event = new CustomEvent('deleteNode', { detail: { id } });
     window.dispatchEvent(event);
-  };
-
-  const addNodeAfter = (blockType: string) => {
-    const event = new CustomEvent('addNodeAfter', { detail: { sourceNodeId: id, blockType } });
-    window.dispatchEvent(event);
-    setShowAddMenu(false);
   };
 
   return (
     <div className={`relative bg-white rounded-lg shadow-md border ${selected ? 'border-indigo-500 shadow-lg' : 'border-gray-300'} transition-all w-[280px] group`}>
       <Handle type="target" position={Position.Top} className="w-3 h-3 bg-indigo-500 border-2 border-white" />
       <Handle type="source" position={Position.Bottom} className="w-3 h-3 bg-indigo-500 border-2 border-white" />
+
+      {/* Add Connection Handle - styled as plus button */}
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        id="add-connection"
+        className="!w-6 !h-6 !bg-indigo-600 hover:!bg-indigo-700 !border-2 !border-white !rounded-full !shadow-md !-bottom-3 !left-1/2 !-translate-x-1/2 !opacity-0 group-hover:!opacity-100 !transition-all !cursor-crosshair"
+        style={{
+          width: '24px',
+          height: '24px',
+          bottom: '-12px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+        }}
+      >
+        <span className="absolute inset-0 flex items-center justify-center text-white text-sm font-bold pointer-events-none">+</span>
+      </Handle>
 
       {/* Delete Button */}
       {selected && (
@@ -937,37 +903,6 @@ const AIAgentNode = ({ id, data, selected }: any) => {
         >
           ✕
         </button>
-      )}
-
-      {/* Add Node Button */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          setShowAddMenu(!showAddMenu);
-        }}
-        className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-6 h-6 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full flex items-center justify-center text-sm shadow-md z-10 transition-all opacity-0 group-hover:opacity-100"
-        title="Add node"
-      >
-        +
-      </button>
-
-      {/* Add Node Menu */}
-      {showAddMenu && (
-        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-8 bg-white border-2 border-gray-200 rounded-lg shadow-xl py-2 min-w-[200px] z-50">
-          <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase">Add Next Step</div>
-          <button onClick={() => addNodeAfter('action')} className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2">
-            <span>💬</span> Send Message
-          </button>
-          <button onClick={() => addNodeAfter('aiAgent')} className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2">
-            <span>🤖</span> AI Response
-          </button>
-          <button onClick={() => addNodeAfter('condition')} className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2">
-            <span>❓</span> Condition
-          </button>
-          <button onClick={() => addNodeAfter('delay')} className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2">
-            <span>⏰</span> Delay
-          </button>
-        </div>
       )}
 
       <div className="bg-indigo-500 px-3 py-2 rounded-t-lg flex items-center gap-2">
@@ -992,17 +927,9 @@ const AIAgentNode = ({ id, data, selected }: any) => {
 };
 
 const ConditionNode = ({ id, data, selected }: any) => {
-  const [showAddMenu, setShowAddMenu] = useState(false);
-
   const deleteNode = () => {
     const event = new CustomEvent('deleteNode', { detail: { id } });
     window.dispatchEvent(event);
-  };
-
-  const addNodeAfter = (blockType: string) => {
-    const event = new CustomEvent('addNodeAfter', { detail: { sourceNodeId: id, blockType } });
-    window.dispatchEvent(event);
-    setShowAddMenu(false);
   };
 
   return (
@@ -1023,37 +950,6 @@ const ConditionNode = ({ id, data, selected }: any) => {
         >
           ✕
         </button>
-      )}
-
-      {/* Add Node Button */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          setShowAddMenu(!showAddMenu);
-        }}
-        className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-6 h-6 bg-orange-600 hover:bg-orange-700 text-white rounded-full flex items-center justify-center text-sm shadow-md z-10 transition-all opacity-0 group-hover:opacity-100"
-        title="Add node"
-      >
-        +
-      </button>
-
-      {/* Add Node Menu */}
-      {showAddMenu && (
-        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-8 bg-white border-2 border-gray-200 rounded-lg shadow-xl py-2 min-w-[200px] z-50">
-          <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase">Add Next Step</div>
-          <button onClick={() => addNodeAfter('action')} className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2">
-            <span>💬</span> Send Message
-          </button>
-          <button onClick={() => addNodeAfter('aiAgent')} className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2">
-            <span>🤖</span> AI Response
-          </button>
-          <button onClick={() => addNodeAfter('condition')} className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2">
-            <span>❓</span> Condition
-          </button>
-          <button onClick={() => addNodeAfter('delay')} className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2">
-            <span>⏰</span> Delay
-          </button>
-        </div>
       )}
 
       <div className="bg-orange-500 px-3 py-2 rounded-t-lg flex items-center gap-2">
@@ -1080,23 +976,32 @@ const ConditionNode = ({ id, data, selected }: any) => {
 };
 
 const DelayNode = ({ id, data, selected }: any) => {
-  const [showAddMenu, setShowAddMenu] = useState(false);
-
   const deleteNode = () => {
     const event = new CustomEvent('deleteNode', { detail: { id } });
     window.dispatchEvent(event);
-  };
-
-  const addNodeAfter = (blockType: string) => {
-    const event = new CustomEvent('addNodeAfter', { detail: { sourceNodeId: id, blockType } });
-    window.dispatchEvent(event);
-    setShowAddMenu(false);
   };
 
   return (
     <div className={`relative bg-white rounded-lg shadow-md border ${selected ? 'border-cyan-500 shadow-lg' : 'border-gray-300'} transition-all w-[280px] group`}>
       <Handle type="target" position={Position.Top} className="w-3 h-3 bg-cyan-500 border-2 border-white" />
       <Handle type="source" position={Position.Bottom} className="w-3 h-3 bg-cyan-500 border-2 border-white" />
+
+      {/* Add Connection Handle - styled as plus button */}
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        id="add-connection"
+        className="!w-6 !h-6 !bg-cyan-600 hover:!bg-cyan-700 !border-2 !border-white !rounded-full !shadow-md !-bottom-3 !left-1/2 !-translate-x-1/2 !opacity-0 group-hover:!opacity-100 !transition-all !cursor-crosshair"
+        style={{
+          width: '24px',
+          height: '24px',
+          bottom: '-12px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+        }}
+      >
+        <span className="absolute inset-0 flex items-center justify-center text-white text-sm font-bold pointer-events-none">+</span>
+      </Handle>
 
       {/* Delete Button */}
       {selected && (
@@ -1110,37 +1015,6 @@ const DelayNode = ({ id, data, selected }: any) => {
         >
           ✕
         </button>
-      )}
-
-      {/* Add Node Button */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          setShowAddMenu(!showAddMenu);
-        }}
-        className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-6 h-6 bg-cyan-600 hover:bg-cyan-700 text-white rounded-full flex items-center justify-center text-sm shadow-md z-10 transition-all opacity-0 group-hover:opacity-100"
-        title="Add node"
-      >
-        +
-      </button>
-
-      {/* Add Node Menu */}
-      {showAddMenu && (
-        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-8 bg-white border-2 border-gray-200 rounded-lg shadow-xl py-2 min-w-[200px] z-50">
-          <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase">Add Next Step</div>
-          <button onClick={() => addNodeAfter('action')} className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2">
-            <span>💬</span> Send Message
-          </button>
-          <button onClick={() => addNodeAfter('aiAgent')} className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2">
-            <span>🤖</span> AI Response
-          </button>
-          <button onClick={() => addNodeAfter('condition')} className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2">
-            <span>❓</span> Condition
-          </button>
-          <button onClick={() => addNodeAfter('delay')} className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2">
-            <span>⏰</span> Delay
-          </button>
-        </div>
       )}
 
       <div className="bg-cyan-500 px-3 py-2 rounded-t-lg flex items-center gap-2">
@@ -1771,91 +1645,6 @@ export default function FlowBuilderPage() {
     return () => window.removeEventListener('deleteNode', handleDeleteNode);
   }, [deleteNode]);
 
-  // Handle custom addNodeAfter events from node components
-  useEffect(() => {
-    const handleAddNodeAfter = (event: any) => {
-      const { sourceNodeId, blockType } = event.detail;
-
-      // Find source node position
-      const sourceNode = nodes.find(n => n.id === sourceNodeId);
-      if (!sourceNode) return;
-
-      // Generate unique ID for new node
-      const newNodeId = `${blockType}-${Date.now()}`;
-
-      // Default data based on node type
-      const getDefaultData = (type: string) => {
-        switch (type) {
-          case 'action':
-            return {
-              label: 'Send Message',
-              description: 'Send a message to the user',
-              actionType: 'send_message',
-              messageTemplate: 'Hello! 👋'
-            };
-          case 'aiAgent':
-            return {
-              label: 'AI Response',
-              description: 'AI will respond based on context',
-              aiModel: 'gpt-4',
-              prompt: 'You are a helpful assistant.'
-            };
-          case 'condition':
-            return {
-              label: 'Check Condition',
-              description: 'Evaluate a condition',
-              conditionType: 'contains',
-              value: ''
-            };
-          case 'delay':
-            return {
-              label: 'Wait',
-              description: 'Delay before next action',
-              duration: '5 minutes'
-            };
-          default:
-            return { label: 'New Node', description: 'Configure this node' };
-        }
-      };
-
-      // Create new node below source node
-      const newNode: Node = {
-        id: newNodeId,
-        type: blockType,
-        position: {
-          x: sourceNode.position.x,
-          y: sourceNode.position.y + 180
-        },
-        data: getDefaultData(blockType)
-      };
-
-      // Add node
-      setNodes((nds) => [...nds, newNode]);
-
-      // Create connection - handle condition nodes specially
-      const sourceHandle = sourceNode.type === 'condition' ? undefined : undefined;
-      const newEdge = {
-        id: `${sourceNodeId}-${newNodeId}`,
-        source: sourceNodeId,
-        target: newNodeId,
-        sourceHandle,
-        type: connectionLineType,
-        animated: true,
-        style: { stroke: '#9333ea', strokeWidth: 2 },
-        markerEnd: { type: MarkerType.ArrowClosed, color: '#9333ea' },
-        label: sourceNode.type === 'trigger' ? 'Start' : sourceNode.type === 'delay' ? `After ${sourceNode.data.duration || '5 min'}` : '',
-        labelStyle: { fill: '#fff', fontWeight: 600, fontSize: 11 },
-        labelBgStyle: { fill: '#9333ea', fillOpacity: 0.95 },
-        labelBgPadding: [6, 8] as [number, number],
-        labelBgBorderRadius: 6,
-      };
-
-      setEdges((eds) => [...eds, newEdge]);
-    };
-
-    window.addEventListener('addNodeAfter', handleAddNodeAfter);
-    return () => window.removeEventListener('addNodeAfter', handleAddNodeAfter);
-  }, [nodes, setNodes, setEdges, connectionLineType]);
 
   const saveFlow = async () => {
     setIsSaving(true);
