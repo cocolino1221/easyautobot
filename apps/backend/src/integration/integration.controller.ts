@@ -121,8 +121,9 @@ export class IntegrationController {
         `pages=${encodeURIComponent(JSON.stringify(pages))}`
       );
     } catch (error: any) {
-      console.error('❌ Facebook OAuth callback error:', error.message);
-      return res.redirect(`${process.env.FRONTEND_URL}/integrations?error=${encodeURIComponent(error.message || 'OAuth failed')}`);
+      const message = error?.message || 'OAuth failed';
+      console.error('❌ Facebook OAuth callback error:', message);
+      return res.redirect(`${process.env.FRONTEND_URL}/integrations?error=${encodeURIComponent(message)}`);
     }
   }
 
@@ -163,7 +164,8 @@ export class IntegrationController {
 
       return res.redirect(`${process.env.FRONTEND_URL}/integrations?success=tiktok`);
     } catch (error: any) {
-      return res.redirect(`${process.env.FRONTEND_URL}/integrations?error=${error.message}`);
+      const message = error?.message || 'OAuth failed';
+      return res.redirect(`${process.env.FRONTEND_URL}/integrations?error=${encodeURIComponent(message)}`);
     }
   }
 }
