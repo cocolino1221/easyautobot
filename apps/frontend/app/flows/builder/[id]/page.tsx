@@ -585,18 +585,39 @@ const NodeWrapper = ({ children, id, onDuplicate, onDelete, onConfigure, selecte
   </div>
 );
 
-const TriggerNode = ({ id, data, selected }: any) => (
-  <div className={`relative bg-white rounded-lg shadow-md border ${selected ? 'border-purple-500 shadow-lg' : 'border-gray-300'} transition-all w-[280px]`}>
-    <Handle type="source" position={Position.Bottom} className="w-3 h-3 bg-purple-500 border-2 border-white" />
+const TriggerNode = ({ id, data, selected }: any) => {
+  const deleteNode = () => {
+    // Will be handled by ReactFlow's onNodesDelete
+    const event = new CustomEvent('deleteNode', { detail: { id } });
+    window.dispatchEvent(event);
+  };
 
-    {/* Header */}
-    <div className="bg-purple-500 px-3 py-2 rounded-t-lg flex items-center gap-2">
-      <span className="text-lg">⚡</span>
-      <div className="text-white flex-1">
-        <div className="text-xs font-medium">Trigger</div>
-        <div className="font-semibold text-sm">{data.config?.platform || 'Not Configured'}</div>
+  return (
+    <div className={`relative bg-white rounded-lg shadow-md border ${selected ? 'border-purple-500 shadow-lg' : 'border-gray-300'} transition-all w-[280px] group`}>
+      <Handle type="source" position={Position.Bottom} className="w-3 h-3 bg-purple-500 border-2 border-white" />
+
+      {/* Delete Button */}
+      {selected && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            deleteNode();
+          }}
+          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center text-xs shadow-md z-10 transition-all opacity-0 group-hover:opacity-100"
+          title="Delete node"
+        >
+          ✕
+        </button>
+      )}
+
+      {/* Header */}
+      <div className="bg-purple-500 px-3 py-2 rounded-t-lg flex items-center gap-2">
+        <span className="text-lg">⚡</span>
+        <div className="text-white flex-1">
+          <div className="text-xs font-medium">Trigger</div>
+          <div className="font-semibold text-sm">{data.config?.platform || 'Not Configured'}</div>
+        </div>
       </div>
-    </div>
 
     {/* Body */}
     <div className="p-3">
@@ -637,20 +658,41 @@ const TriggerNode = ({ id, data, selected }: any) => (
       )}
     </div>
   </div>
-);
+  );
+};
 
-const ActionNode = ({ id, data, selected }: any) => (
-  <div className={`relative bg-white rounded-lg shadow-md border ${selected ? 'border-blue-500 shadow-lg' : 'border-gray-300'} transition-all w-[280px]`}>
-    <Handle type="target" position={Position.Top} className="w-3 h-3 bg-blue-500 border-2 border-white" />
-    <Handle type="source" position={Position.Bottom} className="w-3 h-3 bg-blue-500 border-2 border-white" />
+const ActionNode = ({ id, data, selected }: any) => {
+  const deleteNode = () => {
+    const event = new CustomEvent('deleteNode', { detail: { id } });
+    window.dispatchEvent(event);
+  };
 
-    <div className="bg-blue-500 px-3 py-2 rounded-t-lg flex items-center gap-2">
-      <span className="text-lg">{data.icon || '💬'}</span>
-      <div className="text-white flex-1">
-        <div className="text-xs font-medium">Action</div>
-        <div className="font-semibold text-sm truncate">{data.label}</div>
+  return (
+    <div className={`relative bg-white rounded-lg shadow-md border ${selected ? 'border-blue-500 shadow-lg' : 'border-gray-300'} transition-all w-[280px] group`}>
+      <Handle type="target" position={Position.Top} className="w-3 h-3 bg-blue-500 border-2 border-white" />
+      <Handle type="source" position={Position.Bottom} className="w-3 h-3 bg-blue-500 border-2 border-white" />
+
+      {/* Delete Button */}
+      {selected && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            deleteNode();
+          }}
+          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center text-xs shadow-md z-10 transition-all opacity-0 group-hover:opacity-100"
+          title="Delete node"
+        >
+          ✕
+        </button>
+      )}
+
+      <div className="bg-blue-500 px-3 py-2 rounded-t-lg flex items-center gap-2">
+        <span className="text-lg">{data.icon || '💬'}</span>
+        <div className="text-white flex-1">
+          <div className="text-xs font-medium">Action</div>
+          <div className="font-semibold text-sm truncate">{data.label}</div>
+        </div>
       </div>
-    </div>
 
     <div className="p-3">
       <div className="text-xs text-gray-600 mb-2">{data.description}</div>
@@ -672,82 +714,146 @@ const ActionNode = ({ id, data, selected }: any) => (
       )}
     </div>
   </div>
-);
+  );
+};
 
-const AIAgentNode = ({ id, data, selected }: any) => (
-  <div className={`relative bg-white rounded-lg shadow-md border ${selected ? 'border-indigo-500 shadow-lg' : 'border-gray-300'} transition-all w-[280px]`}>
-    <Handle type="target" position={Position.Top} className="w-3 h-3 bg-indigo-500 border-2 border-white" />
-    <Handle type="source" position={Position.Bottom} className="w-3 h-3 bg-indigo-500 border-2 border-white" />
+const AIAgentNode = ({ id, data, selected }: any) => {
+  const deleteNode = () => {
+    const event = new CustomEvent('deleteNode', { detail: { id } });
+    window.dispatchEvent(event);
+  };
 
-    <div className="bg-indigo-500 px-3 py-2 rounded-t-lg flex items-center gap-2">
-      <span className="text-lg">{data.icon || '🤖'}</span>
-      <div className="text-white flex-1">
-        <div className="text-xs font-medium">AI Agent</div>
-        <div className="font-semibold text-sm truncate">{data.label}</div>
-      </div>
-    </div>
+  return (
+    <div className={`relative bg-white rounded-lg shadow-md border ${selected ? 'border-indigo-500 shadow-lg' : 'border-gray-300'} transition-all w-[280px] group`}>
+      <Handle type="target" position={Position.Top} className="w-3 h-3 bg-indigo-500 border-2 border-white" />
+      <Handle type="source" position={Position.Bottom} className="w-3 h-3 bg-indigo-500 border-2 border-white" />
 
-    <div className="p-3">
-      <div className="text-xs text-gray-600 mb-2">{data.description}</div>
-      {data.aiModel && (
-        <div className="mt-2 flex items-center gap-2 text-xs">
-          <span className="text-gray-500">Model:</span>
-          <span className="font-semibold bg-indigo-50 px-2 py-1 rounded text-indigo-700">{data.aiModel}</span>
-        </div>
+      {/* Delete Button */}
+      {selected && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            deleteNode();
+          }}
+          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center text-xs shadow-md z-10 transition-all opacity-0 group-hover:opacity-100"
+          title="Delete node"
+        >
+          ✕
+        </button>
       )}
-    </div>
-  </div>
-);
 
-const ConditionNode = ({ id, data, selected }: any) => (
-  <div className={`relative bg-white rounded-lg shadow-md border ${selected ? 'border-orange-500 shadow-lg' : 'border-gray-300'} transition-all w-[280px]`}>
-    <Handle type="target" position={Position.Top} className="w-3 h-3 bg-orange-500 border-2 border-white" />
-    <Handle type="source" position={Position.Bottom} className="w-3 h-3 bg-green-500 border-2 border-white" id="yes" style={{ left: '35%' }} />
-    <Handle type="source" position={Position.Bottom} className="w-3 h-3 bg-red-500 border-2 border-white" id="no" style={{ left: '65%' }} />
-
-    <div className="bg-orange-500 px-3 py-2 rounded-t-lg flex items-center gap-2">
-      <span className="text-lg">❓</span>
-      <div className="text-white flex-1">
-        <div className="text-xs font-medium">Condition</div>
-        <div className="font-semibold text-sm truncate">{data.label}</div>
-      </div>
-    </div>
-
-    <div className="p-3">
-      <div className="text-xs text-gray-600 mb-2">{data.description}</div>
-      <div className="flex gap-2 mt-2">
-        <div className="flex-1 px-2 py-1.5 bg-green-50 rounded text-center border border-green-300">
-          <div className="text-green-700 font-semibold text-xs">✓ Yes</div>
-        </div>
-        <div className="flex-1 px-2 py-1.5 bg-red-50 rounded text-center border border-red-300">
-          <div className="text-red-700 font-semibold text-xs">✗ No</div>
+      <div className="bg-indigo-500 px-3 py-2 rounded-t-lg flex items-center gap-2">
+        <span className="text-lg">{data.icon || '🤖'}</span>
+        <div className="text-white flex-1">
+          <div className="text-xs font-medium">AI Agent</div>
+          <div className="font-semibold text-sm truncate">{data.label}</div>
         </div>
       </div>
-    </div>
-  </div>
-);
 
-const DelayNode = ({ id, data, selected }: any) => (
-  <div className={`relative bg-white rounded-lg shadow-md border ${selected ? 'border-cyan-500 shadow-lg' : 'border-gray-300'} transition-all w-[280px]`}>
-    <Handle type="target" position={Position.Top} className="w-3 h-3 bg-cyan-500 border-2 border-white" />
-    <Handle type="source" position={Position.Bottom} className="w-3 h-3 bg-cyan-500 border-2 border-white" />
-
-    <div className="bg-cyan-500 px-3 py-2 rounded-t-lg flex items-center gap-2">
-      <span className="text-lg">⏰</span>
-      <div className="text-white flex-1">
-        <div className="text-xs font-medium">Delay</div>
-        <div className="font-semibold text-sm truncate">{data.label}</div>
+      <div className="p-3">
+        <div className="text-xs text-gray-600 mb-2">{data.description}</div>
+        {data.aiModel && (
+          <div className="mt-2 flex items-center gap-2 text-xs">
+            <span className="text-gray-500">Model:</span>
+            <span className="font-semibold bg-indigo-50 px-2 py-1 rounded text-indigo-700">{data.aiModel}</span>
+          </div>
+        )}
       </div>
     </div>
+  );
+};
 
-    <div className="p-3">
-      <div className="text-xs text-gray-600 mb-2">{data.description}</div>
-      <div className="mt-2 px-3 py-2 bg-cyan-50 rounded text-center border border-cyan-200">
-        <div className="text-cyan-700 font-semibold text-sm">{data.duration || '5 minutes'}</div>
+const ConditionNode = ({ id, data, selected }: any) => {
+  const deleteNode = () => {
+    const event = new CustomEvent('deleteNode', { detail: { id } });
+    window.dispatchEvent(event);
+  };
+
+  return (
+    <div className={`relative bg-white rounded-lg shadow-md border ${selected ? 'border-orange-500 shadow-lg' : 'border-gray-300'} transition-all w-[280px] group`}>
+      <Handle type="target" position={Position.Top} className="w-3 h-3 bg-orange-500 border-2 border-white" />
+      <Handle type="source" position={Position.Bottom} className="w-3 h-3 bg-green-500 border-2 border-white" id="yes" style={{ left: '35%' }} />
+      <Handle type="source" position={Position.Bottom} className="w-3 h-3 bg-red-500 border-2 border-white" id="no" style={{ left: '65%' }} />
+
+      {/* Delete Button */}
+      {selected && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            deleteNode();
+          }}
+          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center text-xs shadow-md z-10 transition-all opacity-0 group-hover:opacity-100"
+          title="Delete node"
+        >
+          ✕
+        </button>
+      )}
+
+      <div className="bg-orange-500 px-3 py-2 rounded-t-lg flex items-center gap-2">
+        <span className="text-lg">❓</span>
+        <div className="text-white flex-1">
+          <div className="text-xs font-medium">Condition</div>
+          <div className="font-semibold text-sm truncate">{data.label}</div>
+        </div>
+      </div>
+
+      <div className="p-3">
+        <div className="text-xs text-gray-600 mb-2">{data.description}</div>
+        <div className="flex gap-2 mt-2">
+          <div className="flex-1 px-2 py-1.5 bg-green-50 rounded text-center border border-green-300">
+            <div className="text-green-700 font-semibold text-xs">✓ Yes</div>
+          </div>
+          <div className="flex-1 px-2 py-1.5 bg-red-50 rounded text-center border border-red-300">
+            <div className="text-red-700 font-semibold text-xs">✗ No</div>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
+
+const DelayNode = ({ id, data, selected }: any) => {
+  const deleteNode = () => {
+    const event = new CustomEvent('deleteNode', { detail: { id } });
+    window.dispatchEvent(event);
+  };
+
+  return (
+    <div className={`relative bg-white rounded-lg shadow-md border ${selected ? 'border-cyan-500 shadow-lg' : 'border-gray-300'} transition-all w-[280px] group`}>
+      <Handle type="target" position={Position.Top} className="w-3 h-3 bg-cyan-500 border-2 border-white" />
+      <Handle type="source" position={Position.Bottom} className="w-3 h-3 bg-cyan-500 border-2 border-white" />
+
+      {/* Delete Button */}
+      {selected && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            deleteNode();
+          }}
+          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center text-xs shadow-md z-10 transition-all opacity-0 group-hover:opacity-100"
+          title="Delete node"
+        >
+          ✕
+        </button>
+      )}
+
+      <div className="bg-cyan-500 px-3 py-2 rounded-t-lg flex items-center gap-2">
+        <span className="text-lg">⏰</span>
+        <div className="text-white flex-1">
+          <div className="text-xs font-medium">Delay</div>
+          <div className="font-semibold text-sm truncate">{data.label}</div>
+        </div>
+      </div>
+
+      <div className="p-3">
+        <div className="text-xs text-gray-600 mb-2">{data.description}</div>
+        <div className="mt-2 px-3 py-2 bg-cyan-50 rounded text-center border border-cyan-200">
+          <div className="text-cyan-700 font-semibold text-sm">{data.duration || '5 minutes'}</div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const nodeTypes = {
   trigger: TriggerNode,
@@ -1106,10 +1212,10 @@ export default function FlowBuilderPage() {
     }
   };
 
-  const deleteNode = (nodeId: string) => {
+  const deleteNode = useCallback((nodeId: string) => {
     setNodes((nds) => nds.filter((node) => node.id !== nodeId));
     setEdges((eds) => eds.filter((edge) => edge.source !== nodeId && edge.target !== nodeId));
-  };
+  }, [setNodes, setEdges]);
 
   const configureNode = (nodeId: string) => {
     const node = nodes.find(n => n.id === nodeId);
@@ -1186,6 +1292,17 @@ export default function FlowBuilderPage() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [nodes, edges, onNodesDelete, onEdgesDelete]);
+
+  // Handle custom deleteNode events from node components
+  useEffect(() => {
+    const handleDeleteNode = (event: any) => {
+      const nodeId = event.detail.id;
+      deleteNode(nodeId);
+    };
+
+    window.addEventListener('deleteNode', handleDeleteNode);
+    return () => window.removeEventListener('deleteNode', handleDeleteNode);
+  }, [deleteNode]);
 
   const saveFlow = async () => {
     setIsSaving(true);
