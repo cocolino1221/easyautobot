@@ -774,6 +774,8 @@ export default function FlowBuilderPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [collapsedSections, setCollapsedSections] = useState<string[]>([]);
   const [showProTips, setShowProTips] = useState(true);
+  const [flowStatus, setFlowStatus] = useState<'draft' | 'active' | 'paused'>('draft');
+  const [showFlowMenu, setShowFlowMenu] = useState(false);
 
   // Connection line style state
   const [connectionLineType, setConnectionLineType] = useState<ConnectionLineType>(ConnectionLineType.SmoothStep);
@@ -818,21 +820,45 @@ export default function FlowBuilderPage() {
         return;
       }
 
+      // Get source node to determine label
+      const sourceNode = nodes.find(n => n.id === connection.source);
+      let label = '';
+      let labelBgColor = '#9333ea';
+
+      // Add labels based on connection type
+      if (connection.sourceHandle === 'yes') {
+        label = '✓ Yes';
+        labelBgColor = '#22c55e';
+      } else if (connection.sourceHandle === 'no') {
+        label = '✗ No';
+        labelBgColor = '#ef4444';
+      } else if (sourceNode?.type === 'trigger') {
+        label = 'Start';
+        labelBgColor = '#a855f7';
+      } else if (sourceNode?.type === 'delay') {
+        const duration = sourceNode.data.duration || '5 min';
+        label = `After ${duration}`;
+        labelBgColor = '#06b6d4';
+      } else if (sourceNode?.data?.actionType === 'quick_replies') {
+        label = 'Button';
+        labelBgColor = '#8b5cf6';
+      }
+
       const newEdge = {
         ...connection,
         type: connectionLineType,
         animated: true,
-        style: { stroke: '#9333ea', strokeWidth: 3 },
+        style: { stroke: '#9333ea', strokeWidth: 2 },
         markerEnd: { type: MarkerType.ArrowClosed, color: '#9333ea' },
-        label: connection.sourceHandle === 'yes' ? '✓ YES' : connection.sourceHandle === 'no' ? '✗ NO' : '',
-        labelStyle: { fill: '#fff', fontWeight: 700, fontSize: 12 },
-        labelBgStyle: { fill: connection.sourceHandle === 'yes' ? '#22c55e' : connection.sourceHandle === 'no' ? '#ef4444' : '#9333ea', fillOpacity: 0.9 },
-        labelBgPadding: [8, 4] as [number, number],
-        labelBgBorderRadius: 8,
+        label,
+        labelStyle: { fill: '#fff', fontWeight: 600, fontSize: 11 },
+        labelBgStyle: { fill: labelBgColor, fillOpacity: 0.95 },
+        labelBgPadding: [6, 8] as [number, number],
+        labelBgBorderRadius: 6,
       };
       setEdges((eds) => addEdge(newEdge, eds));
     },
-    [setEdges, connectionLineType, isValidConnection]
+    [setEdges, connectionLineType, isValidConnection, nodes]
   );
 
   // Auto-arrange function - ManyChat inspired
@@ -928,7 +954,7 @@ export default function FlowBuilderPage() {
     setNodes(arranged);
   }, [nodes, edges, setNodes]);
 
-  // Enhanced Block templates
+  // ManyChat-style Block templates
   const blockTemplates = [
     {
       category: 'Triggers',
@@ -942,46 +968,66 @@ export default function FlowBuilderPage() {
       ]
     },
     {
-      category: 'AI Agents',
-      color: 'indigo',
-      icon: '🤖',
+      category: 'Send Content',
+      color: 'blue',
+      icon: '📤',
       blocks: [
-        { type: 'aiAgent', label: 'GPT Response', description: 'AI-powered reply generation', icon: '🤖', agentType: 'gpt_response', aiModel: 'gpt-4', status: 'active' },
-        { type: 'aiAgent', label: 'Sentiment Analysis', description: 'Detect emotion & tone', icon: '😊', agentType: 'sentiment', status: 'active' },
-        { type: 'aiAgent', label: 'Language Detection', description: 'Identify language', icon: '🌍', agentType: 'language', status: 'active' },
-        { type: 'aiAgent', label: 'Intent Classification', description: 'Understand user intent', icon: '🎯', agentType: 'intent', status: 'active' },
-        { type: 'aiAgent', label: 'Custom AI Prompt', description: 'Your own AI logic', icon: '✨', agentType: 'custom_prompt', status: 'active' },
+        { type: 'action', label: 'Text Message', description: 'Send text message', icon: '💬', actionType: 'send_message', status: 'active' },
+        { type: 'action', label: 'Image', description: 'Send image', icon: '🖼️', actionType: 'send_image', status: 'active' },
+        { type: 'action', label: 'Video', description: 'Send video', icon: '🎥', actionType: 'send_video', status: 'active' },
+        { type: 'action', label: 'Voice Message', description: 'Send voice note (max 60s)', icon: '🎤', actionType: 'send_voice_message', status: 'active' },
+        { type: 'action', label: 'File', description: 'Send file attachment', icon: '📎', actionType: 'send_file', status: 'active' },
+        { type: 'action', label: 'Gallery', description: 'Send carousel of images', icon: '🎠', actionType: 'send_gallery', status: 'active' },
+      ]
+    },
+    {
+      category: 'User Input',
+      color: 'purple',
+      icon: '⚡',
+      blocks: [
+        { type: 'action', label: 'Quick Reply Buttons', description: 'Buttons for quick responses (max 13)', icon: '🔘', actionType: 'quick_replies', status: 'active' },
+        { type: 'action', label: 'Text Input', description: 'Ask for text response', icon: '✏️', actionType: 'text_input', status: 'active' },
+        { type: 'action', label: 'Phone Number', description: 'Request phone number', icon: '📱', actionType: 'phone_input', status: 'active' },
+        { type: 'action', label: 'Email', description: 'Request email address', icon: '📧', actionType: 'email_input', status: 'active' },
+        { type: 'action', label: 'Date/Time', description: 'Ask for date or time', icon: '📅', actionType: 'datetime_input', status: 'active' },
       ]
     },
     {
       category: 'Actions',
-      color: 'blue',
-      icon: '⚙️',
+      color: 'green',
+      icon: '🎯',
       blocks: [
-        { type: 'action', label: 'Send Message', description: 'Send text message', icon: '📤', actionType: 'send_message', status: 'active' },
-        { type: 'action', label: 'Send Voice Message', description: 'Auto-send voice note (60s)', icon: '🎤', actionType: 'send_voice_message', voiceDuration: '0s', status: 'active' },
-        { type: 'action', label: 'Quick Replies', description: 'Send buttons (max 12)', icon: '🔘', actionType: 'quick_replies', quickReplies: ['Option 1', 'Option 2'], status: 'active' },
-        { type: 'action', label: 'Reply Comment', description: 'Reply to comment', icon: '↩️', actionType: 'reply_comment', status: 'active' },
-        { type: 'action', label: 'Auto-Reply', description: 'Send templated response', icon: '💬', actionType: 'auto_reply', status: 'active' },
         { type: 'action', label: 'Add Tag', description: 'Tag the user', icon: '🏷️', actionType: 'add_tag', status: 'active' },
         { type: 'action', label: 'Remove Tag', description: 'Remove user tag', icon: '🗑️', actionType: 'remove_tag', status: 'active' },
-        { type: 'action', label: 'Subscribe', description: 'Add to sequence', icon: '➕', actionType: 'subscribe', status: 'active' },
+        { type: 'action', label: 'Subscribe to Sequence', description: 'Add to sequence', icon: '➕', actionType: 'subscribe', status: 'active' },
         { type: 'action', label: 'Unsubscribe', description: 'Remove from sequence', icon: '➖', actionType: 'unsubscribe', status: 'active' },
-        { type: 'action', label: 'Save to CRM', description: 'Store in database', icon: '💾', actionType: 'save_crm', status: 'active' },
-        { type: 'action', label: 'Send Email', description: 'Email notification', icon: '📧', actionType: 'send_email', status: 'active' },
-        { type: 'action', label: 'Start Flow', description: 'Trigger another automation', icon: '🔄', actionType: 'start_flow', status: 'active' },
-        { type: 'action', label: 'Set Field', description: 'Update user data', icon: '📝', actionType: 'set_field', status: 'active' },
+        { type: 'action', label: 'Set Custom Field', description: 'Update user data', icon: '📝', actionType: 'set_field', status: 'active' },
+        { type: 'action', label: 'Send Email', description: 'Email notification', icon: '✉️', actionType: 'send_email', status: 'active' },
+        { type: 'action', label: 'Notify Admins', description: 'Alert team members', icon: '🔔', actionType: 'notify_admins', status: 'active' },
       ]
     },
     {
-      category: 'Logic',
-      color: 'amber',
+      category: 'Smart Features',
+      color: 'indigo',
+      icon: '🤖',
+      blocks: [
+        { type: 'aiAgent', label: 'AI Response', description: 'GPT-powered replies', icon: '🤖', agentType: 'gpt_response', aiModel: 'gpt-4', status: 'active' },
+        { type: 'aiAgent', label: 'Sentiment Analysis', description: 'Detect emotion & tone', icon: '😊', agentType: 'sentiment', status: 'active' },
+        { type: 'aiAgent', label: 'Language Detection', description: 'Identify language', icon: '🌍', agentType: 'language', status: 'active' },
+        { type: 'aiAgent', label: 'Intent Recognition', description: 'Understand user intent', icon: '🎯', agentType: 'intent', status: 'active' },
+      ]
+    },
+    {
+      category: 'Logic & Flow',
+      color: 'orange',
       icon: '🔀',
       blocks: [
-        { type: 'condition', label: 'If/Else', description: 'Conditional branching', icon: '❓', conditionType: 'if_else', status: 'active' },
-        { type: 'condition', label: 'Contains Keyword', description: 'Check for keywords', icon: '🔍', conditionType: 'contains', status: 'active' },
+        { type: 'condition', label: 'Condition', description: 'If/else branching', icon: '❓', conditionType: 'if_else', status: 'active' },
+        { type: 'condition', label: 'Keyword Check', description: 'Check for keywords', icon: '🔍', conditionType: 'contains', status: 'active' },
         { type: 'condition', label: 'User Filter', description: 'Filter by user data', icon: '👥', conditionType: 'user_filter', status: 'active' },
-        { type: 'delay', label: 'Wait', description: 'Add delay', icon: '⏰', delayType: 'wait', duration: '5 minutes', status: 'active' },
+        { type: 'delay', label: 'Delay', description: 'Wait before next step', icon: '⏰', delayType: 'wait', duration: '5 minutes', status: 'active' },
+        { type: 'action', label: 'Go To Block', description: 'Jump to another step', icon: '➡️', actionType: 'go_to', status: 'active' },
+        { type: 'action', label: 'Start Another Flow', description: 'Trigger different flow', icon: '🔄', actionType: 'start_flow', status: 'active' },
       ]
     }
   ];
@@ -1192,35 +1238,82 @@ export default function FlowBuilderPage() {
         onUpdate={updateNodeConfig}
       />
 
-      {/* Top Bar */}
+      {/* Top Bar - ManyChat Style */}
       <div className="bg-white border-b border-gray-200 px-5 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" onClick={() => router.push('/flows')} className="gap-2 text-sm h-9">
-            <span>←</span> Back
+        <div className="flex items-center gap-3">
+          <Button variant="outline" onClick={() => router.push('/flows')} className="gap-1 text-sm h-9 px-3">
+            <span>←</span> Flows
           </Button>
-          <div className="h-6 w-px bg-gray-300" />
-          <input
-            type="text"
-            value={flowName}
-            onChange={(e) => setFlowName(e.target.value)}
-            className="text-lg font-semibold border-none outline-none bg-transparent px-2 py-1 hover:bg-gray-50 rounded transition-colors"
-            placeholder="Flow Name"
-          />
+          <div className="h-6 w-px bg-gray-200" />
+          <div className="relative">
+            <button
+              onClick={() => setShowFlowMenu(!showFlowMenu)}
+              className="flex items-center gap-2 px-2 py-1 hover:bg-gray-50 rounded transition-colors"
+            >
+              <input
+                type="text"
+                value={flowName}
+                onChange={(e) => setFlowName(e.target.value)}
+                className="text-base font-semibold border-none outline-none bg-transparent"
+                placeholder="Untitled Flow"
+                onClick={(e) => e.stopPropagation()}
+              />
+              <span className="text-gray-400 text-xs">▼</span>
+            </button>
+            {showFlowMenu && (
+              <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[200px] z-50">
+                <button className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2">
+                  <span>📝</span> Rename Flow
+                </button>
+                <button className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2">
+                  <span>📋</span> Duplicate Flow
+                </button>
+                <button className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2">
+                  <span>📁</span> Move to Folder
+                </button>
+                <div className="border-t border-gray-200 my-1"></div>
+                <button className="w-full text-left px-4 py-2 text-sm hover:bg-red-50 text-red-600 flex items-center gap-2">
+                  <span>🗑️</span> Delete Flow
+                </button>
+              </div>
+            )}
+          </div>
+          <div className="h-6 w-px bg-gray-200" />
+          <div className="flex items-center gap-2">
+            <span className={`px-2 py-1 rounded text-xs font-medium ${
+              flowStatus === 'active' ? 'bg-green-100 text-green-700' :
+              flowStatus === 'paused' ? 'bg-yellow-100 text-yellow-700' :
+              'bg-gray-100 text-gray-700'
+            }`}>
+              {flowStatus === 'active' ? '✓ Active' : flowStatus === 'paused' ? '⏸ Paused' : '○ Draft'}
+            </span>
+          </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" className="gap-2 text-sm h-9">
-            <span>▶️</span> Test Flow
+          <Button variant="outline" className="gap-1 text-sm h-9 px-3">
+            <span>👁️</span> Preview
           </Button>
-          <Button variant="outline" className="gap-2 text-sm h-9">
-            <span>📊</span> Analytics
+          <Button variant="outline" className="gap-1 text-sm h-9 px-3">
+            <span>📊</span> Stats
+          </Button>
+          <Button variant="outline" className="gap-1 text-sm h-9 px-3">
+            <span>⚙️</span> Settings
           </Button>
           <Button
             onClick={saveFlow}
             disabled={isSaving}
-            className="bg-purple-600 hover:bg-purple-700 gap-2 text-sm h-9"
+            className="bg-purple-600 hover:bg-purple-700 gap-1 text-sm h-9 px-4"
           >
-            <span>💾</span> {isSaving ? 'Saving...' : 'Save Flow'}
+            {isSaving ? 'Saving...' : '💾 Save'}
           </Button>
+          {flowStatus === 'draft' && (
+            <Button
+              onClick={() => setFlowStatus('active')}
+              className="bg-green-600 hover:bg-green-700 gap-1 text-sm h-9 px-4"
+            >
+              ✓ Publish
+            </Button>
+          )}
         </div>
       </div>
 
