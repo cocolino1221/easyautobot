@@ -4,293 +4,342 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
-interface FlowNode {
+interface Flow {
   id: string;
-  type: 'trigger' | 'condition' | 'action' | 'message';
-  title: string;
-  config: any;
-  position: { x: number; y: number };
-  connections: string[];
+  name: string;
+  status: 'ACTIVE' | 'DRAFT' | 'PAUSED';
+  folder: string;
+  platforms: ('instagram' | 'facebook' | 'tiktok' | 'whatsapp')[];
+  lastEdited: string;
+  messagesSent: number;
+  completionRate: number;
+}
+
+interface Folder {
+  id: string;
+  name: string;
+  icon: string;
+  count: number;
+  isExpanded: boolean;
 }
 
 export default function FlowsPage() {
-  const [flows, setFlows] = useState([
+  const [folders, setFolders] = useState<Folder[]>([
+    { id: 'all', name: 'All Flows', icon: '📁', count: 8, isExpanded: true },
+    { id: 'welcome', name: 'Welcome Sequences', icon: '👋', count: 3, isExpanded: true },
+    { id: 'sales', name: 'Sales Funnels', icon: '💰', count: 2, isExpanded: false },
+    { id: 'support', name: 'Customer Support', icon: '💬', count: 2, isExpanded: false },
+    { id: 'uncategorized', name: 'Uncategorized', icon: '📂', count: 1, isExpanded: false },
+  ]);
+
+  const [flows, setFlows] = useState<Flow[]>([
     {
       id: '1',
-      name: 'Welcome Message',
+      name: 'Welcome New Subscribers',
       status: 'ACTIVE',
-      trigger: 'New Message',
-      actions: 3,
-      lastRun: '2 hours ago',
+      folder: 'welcome',
+      platforms: ['instagram', 'facebook'],
+      lastEdited: '2 hours ago',
+      messagesSent: 245,
+      completionRate: 87,
     },
     {
       id: '2',
-      name: 'Auto-reply FAQ',
+      name: 'Re-engagement Flow',
       status: 'ACTIVE',
-      trigger: 'Keyword Match',
-      actions: 5,
-      lastRun: '10 minutes ago',
+      folder: 'welcome',
+      platforms: ['instagram'],
+      lastEdited: '1 day ago',
+      messagesSent: 89,
+      completionRate: 92,
     },
     {
       id: '3',
-      name: 'Order Confirmation',
+      name: 'Birthday Greetings',
+      status: 'PAUSED',
+      folder: 'welcome',
+      platforms: ['facebook', 'whatsapp'],
+      lastEdited: '3 days ago',
+      messagesSent: 156,
+      completionRate: 95,
+    },
+    {
+      id: '4',
+      name: 'Product Launch Sequence',
+      status: 'ACTIVE',
+      folder: 'sales',
+      platforms: ['instagram', 'tiktok'],
+      lastEdited: '5 hours ago',
+      messagesSent: 412,
+      completionRate: 76,
+    },
+    {
+      id: '5',
+      name: 'Cart Abandonment',
       status: 'DRAFT',
-      trigger: 'Comment',
-      actions: 4,
-      lastRun: 'Never',
+      folder: 'sales',
+      platforms: ['facebook'],
+      lastEdited: '1 week ago',
+      messagesSent: 0,
+      completionRate: 0,
+    },
+    {
+      id: '6',
+      name: 'FAQ Handler',
+      status: 'ACTIVE',
+      folder: 'support',
+      platforms: ['whatsapp', 'instagram'],
+      lastEdited: '10 minutes ago',
+      messagesSent: 1247,
+      completionRate: 94,
+    },
+    {
+      id: '7',
+      name: 'Return Request Flow',
+      status: 'ACTIVE',
+      folder: 'support',
+      platforms: ['whatsapp'],
+      lastEdited: '2 days ago',
+      messagesSent: 67,
+      completionRate: 88,
+    },
+    {
+      id: '8',
+      name: 'Test Flow',
+      status: 'DRAFT',
+      folder: 'uncategorized',
+      platforms: ['instagram'],
+      lastEdited: '3 weeks ago',
+      messagesSent: 0,
+      completionRate: 0,
     },
   ]);
 
-  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedFolder, setSelectedFolder] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const getStatusColor = (status: string) => {
+  const toggleFolder = (folderId: string) => {
+    setFolders(folders.map(f =>
+      f.id === folderId ? { ...f, isExpanded: !f.isExpanded } : f
+    ));
+  };
+
+  const filteredFlows = flows.filter(flow => {
+    const matchesFolder = selectedFolder === 'all' || flow.folder === selectedFolder;
+    const matchesSearch = flow.name.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesFolder && matchesSearch;
+  });
+
+  const getPlatformIcon = (platform: string) => {
+    switch (platform) {
+      case 'instagram': return '📷';
+      case 'facebook': return '👍';
+      case 'tiktok': return '🎵';
+      case 'whatsapp': return '💬';
+      default: return '📱';
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
     switch (status) {
       case 'ACTIVE':
-        return 'bg-green-100 text-green-800';
+        return <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">✓ Active</span>;
+      case 'PAUSED':
+        return <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs font-medium">⏸ Paused</span>;
       case 'DRAFT':
-        return 'bg-gray-100 text-gray-800';
-      case 'INACTIVE':
-        return 'bg-red-100 text-red-800';
+        return <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-medium">○ Draft</span>;
       default:
-        return 'bg-gray-100 text-gray-800';
+        return <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-medium">{status}</span>;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 shadow-sm">
-        <div className="container mx-auto px-6 py-4">
+      <header className="bg-white border-b border-gray-200">
+        <div className="px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              </div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">Automation Flows</h1>
-            </div>
-            <nav className="flex gap-2">
+            <div className="flex items-center gap-4">
               <Link href="/dashboard">
-                <Button variant="ghost" className="hover:bg-gray-100">Dashboard</Button>
+                <button className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
+                  <span>←</span>
+                  <span className="text-sm font-medium">Dashboard</span>
+                </button>
               </Link>
-              <Link href="/inbox">
-                <Button variant="ghost" className="hover:bg-gray-100">Inbox</Button>
+              <div className="h-6 w-px bg-gray-200" />
+              <h1 className="text-xl font-semibold text-gray-900">Flows</h1>
+            </div>
+            <div className="flex gap-3">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search flows..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-64 px-3 py-2 pl-9 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-purple-500"
+                />
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+              </div>
+              <Link href="/flows/builder/new">
+                <Button className="bg-purple-600 hover:bg-purple-700 text-sm h-9">
+                  + New Flow
+                </Button>
               </Link>
-              <Link href="/posts">
-                <Button variant="ghost" className="hover:bg-gray-100">Posts</Button>
-              </Link>
-              <Link href="/flows">
-                <Button variant="ghost" className="bg-purple-50 text-purple-700 hover:bg-purple-100">Flows</Button>
-              </Link>
-              <Link href="/integrations">
-                <Button variant="ghost" className="hover:bg-gray-100">Integrations</Button>
-              </Link>
-            </nav>
+            </div>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-6 py-8">
-        {/* Action Bar */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Your Automation Flows</h2>
-            <p className="text-gray-600">Create automated responses and workflows for your social media</p>
-          </div>
-          <Link href="/flows/builder/new">
-            <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 h-12 px-6">
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              Create New Flow
-            </Button>
-          </Link>
-        </div>
+      <div className="flex h-[calc(100vh-73px)]">
+        {/* Sidebar with Folders */}
+        <div className="w-64 bg-white border-r border-gray-200 overflow-y-auto">
+          <div className="p-4">
+            <div className="space-y-1">
+              {folders.map((folder) => (
+                <div key={folder.id}>
+                  <button
+                    onClick={() => {
+                      setSelectedFolder(folder.id);
+                      if (folder.id !== 'all') toggleFolder(folder.id);
+                    }}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      selectedFolder === folder.id
+                        ? 'bg-purple-50 text-purple-700'
+                        : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span>{folder.icon}</span>
+                      <span>{folder.name}</span>
+                    </div>
+                    <span className="text-xs bg-gray-100 px-2 py-0.5 rounded">{folder.count}</span>
+                  </button>
+                </div>
+              ))}
+            </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-purple-100">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Total Flows</h3>
-              <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              </div>
-            </div>
-            <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-              {flows.length}
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-green-100">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Active</h3>
-              <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-            </div>
-            <div className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-              {flows.filter(f => f.status === 'ACTIVE').length}
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-blue-100">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Executions</h3>
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-                </svg>
-              </div>
-            </div>
-            <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              1,247
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-orange-100">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Success Rate</h3>
-              <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-              </div>
-            </div>
-            <div className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
-              98.3%
+            <div className="mt-6 pt-4 border-t border-gray-200">
+              <button className="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-lg">
+                <span>+</span>
+                <span>New Folder</span>
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Flows List */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-xl font-bold text-gray-900">All Flows</h2>
+        {/* Main Content */}
+        <div className="flex-1 overflow-y-auto p-6">
+          {/* Stats */}
+          <div className="grid grid-cols-4 gap-4 mb-6">
+            <div className="bg-white rounded-lg border border-gray-200 p-4">
+              <div className="text-sm text-gray-600 mb-1">Total Flows</div>
+              <div className="text-2xl font-semibold text-gray-900">{flows.length}</div>
+            </div>
+            <div className="bg-white rounded-lg border border-gray-200 p-4">
+              <div className="text-sm text-gray-600 mb-1">Active</div>
+              <div className="text-2xl font-semibold text-green-600">
+                {flows.filter(f => f.status === 'ACTIVE').length}
+              </div>
+            </div>
+            <div className="bg-white rounded-lg border border-gray-200 p-4">
+              <div className="text-sm text-gray-600 mb-1">Messages Sent</div>
+              <div className="text-2xl font-semibold text-gray-900">
+                {flows.reduce((sum, f) => sum + f.messagesSent, 0).toLocaleString()}
+              </div>
+            </div>
+            <div className="bg-white rounded-lg border border-gray-200 p-4">
+              <div className="text-sm text-gray-600 mb-1">Avg. Completion</div>
+              <div className="text-2xl font-semibold text-gray-900">
+                {Math.round(flows.reduce((sum, f) => sum + f.completionRate, 0) / flows.length)}%
+              </div>
+            </div>
           </div>
 
-          {flows.length === 0 ? (
-            <div className="p-12 text-center">
-              <div className="w-20 h-20 bg-gradient-to-r from-purple-100 to-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-10 h-10 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">No flows yet</h3>
+          {/* Flows Grid */}
+          {filteredFlows.length === 0 ? (
+            <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
+              <div className="text-4xl mb-4">📁</div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No flows found</h3>
               <p className="text-gray-600 mb-6">Create your first automation flow to get started</p>
               <Link href="/flows/builder/new">
-                <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
-                  Create Your First Flow
+                <Button className="bg-purple-600 hover:bg-purple-700">
+                  + Create New Flow
                 </Button>
               </Link>
             </div>
           ) : (
-            <div className="divide-y divide-gray-200">
-              {flows.map((flow) => (
-                <div key={flow.id} className="p-6 hover:bg-gray-50 transition-colors group">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-lg font-bold text-gray-900">{flow.name}</h3>
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(flow.status)}`}>
-                          {flow.status}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-6 text-sm text-gray-600">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredFlows.map((flow) => (
+                <Link key={flow.id} href={`/flows/builder/${flow.id}`}>
+                  <div className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md hover:border-purple-300 transition-all cursor-pointer group">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-purple-700 transition-colors">
+                          {flow.name}
+                        </h3>
                         <div className="flex items-center gap-2">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                          </svg>
-                          <span>Trigger: {flow.trigger}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                          </svg>
-                          <span>{flow.actions} Actions</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          <span>Last run: {flow.lastRun}</span>
+                          {getStatusBadge(flow.status)}
                         </div>
                       </div>
+                      <button className="text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                        ⋯
+                      </button>
                     </div>
 
-                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Link href={`/flows/builder/${flow.id}`}>
-                        <Button variant="outline" size="sm">
-                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                          </svg>
-                          Edit
-                        </Button>
-                      </Link>
-                      <Button variant="outline" size="sm">
-                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                        </svg>
-                        Duplicate
-                      </Button>
-                      <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
-                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                        Delete
-                      </Button>
+                    <div className="flex items-center gap-1 mb-3">
+                      {flow.platforms.map((platform) => (
+                        <span key={platform} className="text-base" title={platform}>
+                          {getPlatformIcon(platform)}
+                        </span>
+                      ))}
+                    </div>
+
+                    <div className="space-y-2 text-xs text-gray-600">
+                      <div className="flex justify-between">
+                        <span>Messages sent:</span>
+                        <span className="font-medium text-gray-900">{flow.messagesSent.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Completion:</span>
+                        <span className="font-medium text-gray-900">{flow.completionRate}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Last edited:</span>
+                        <span className="font-medium text-gray-900">{flow.lastEdited}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}
+
+          {/* Templates Section */}
+          {selectedFolder === 'all' && (
+            <div className="mt-8">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Start from Template</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[
+                  { name: 'Welcome Series', desc: 'Greet new subscribers', icon: '🎉', color: 'purple' },
+                  { name: 'Abandoned Cart', desc: 'Recover lost sales', icon: '🛒', color: 'blue' },
+                  { name: 'FAQ Bot', desc: 'Answer common questions', icon: '❓', color: 'green' },
+                  { name: 'Product Launch', desc: 'Build hype', icon: '🚀', color: 'orange' },
+                  { name: 'Review Request', desc: 'Ask for reviews', icon: '⭐', color: 'yellow' },
+                  { name: 'Birthday Message', desc: 'Send birthday wishes', icon: '🎁', color: 'pink' },
+                ].map((template, idx) => (
+                  <Link key={idx} href="/flows/builder/new">
+                    <div className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md hover:border-purple-300 transition-all cursor-pointer">
+                      <div className="text-3xl mb-2">{template.icon}</div>
+                      <h3 className="font-semibold text-gray-900 mb-1">{template.name}</h3>
+                      <p className="text-xs text-gray-600">{template.desc}</p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-
-        {/* Templates Section */}
-        <div className="mt-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Flow Templates</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-200 hover:shadow-lg transition-shadow cursor-pointer">
-              <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <h3 className="font-bold text-lg mb-2">Welcome Message</h3>
-              <p className="text-sm text-gray-600 mb-4">Automatically greet new followers and customers</p>
-              <Button variant="outline" className="w-full">Use Template</Button>
-            </div>
-
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200 hover:shadow-lg transition-shadow cursor-pointer">
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                </svg>
-              </div>
-              <h3 className="font-bold text-lg mb-2">FAQ Auto-reply</h3>
-              <p className="text-sm text-gray-600 mb-4">Respond to common questions automatically</p>
-              <Button variant="outline" className="w-full">Use Template</Button>
-            </div>
-
-            <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-200 hover:shadow-lg transition-shadow cursor-pointer">
-              <div className="w-12 h-12 bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                </svg>
-              </div>
-              <h3 className="font-bold text-lg mb-2">Order Updates</h3>
-              <p className="text-sm text-gray-600 mb-4">Send automated order confirmation and tracking</p>
-              <Button variant="outline" className="w-full">Use Template</Button>
-            </div>
-          </div>
-        </div>
-      </main>
+      </div>
     </div>
   );
 }
