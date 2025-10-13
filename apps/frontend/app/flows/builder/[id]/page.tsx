@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import {
   ReactFlow,
   Background,
@@ -978,6 +978,166 @@ const nodeTypes = {
 const initialNodes: Node[] = [];
 const initialEdges: Edge[] = [];
 
+// Preview Modal Component
+const FlowPreviewModal = ({ isOpen, onClose, nodes, edges }: any) => {
+  const [currentStep, setCurrentStep] = useState(0);
+  const [previewMessages, setPreviewMessages] = useState<any[]>([]);
+
+  if (!isOpen) return null;
+
+  const simulateFlow = () => {
+    // Find trigger node
+    const triggerNode = nodes.find((n: any) => n.type === 'trigger');
+    if (!triggerNode) {
+      setPreviewMessages([{ type: 'system', text: 'No trigger node found. Add a trigger to start.' }]);
+      return;
+    }
+
+    // Build message flow
+    const messages: any[] = [];
+    messages.push({ type: 'system', text: 'Flow started from: ' + triggerNode.data.label, icon: '⚡' });
+
+    // Find connected nodes
+    const connectedEdges = edges.filter((e: any) => e.source === triggerNode.id);
+    connectedEdges.forEach((edge: any) => {
+      const targetNode = nodes.find((n: any) => n.id === edge.target);
+      if (targetNode) {
+        if (targetNode.type === 'action') {
+          messages.push({
+            type: 'bot',
+            text: targetNode.data.messageTemplate || targetNode.data.label,
+            time: 'Just now'
+          });
+        } else if (targetNode.type === 'aiAgent') {
+          messages.push({
+            type: 'bot',
+            text: 'AI: ' + (targetNode.data.description || 'AI response here'),
+            time: 'Just now'
+          });
+        } else if (targetNode.type === 'condition') {
+          messages.push({
+            type: 'system',
+            text: 'Checking condition: ' + targetNode.data.label,
+            icon: '❓'
+          });
+        }
+      }
+    });
+
+    setPreviewMessages(messages);
+  };
+
+  React.useEffect(() => {
+    if (isOpen) {
+      simulateFlow();
+    }
+  }, [isOpen, nodes, edges]);
+
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+        {/* Modal Header */}
+        <div className="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">Preview Flow</h3>
+            <p className="text-sm text-gray-500 mt-0.5">Test your automation</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
+          >
+            <span className="text-gray-400 text-xl">×</span>
+          </button>
+        </div>
+
+        {/* Phone Mockup */}
+        <div className="p-6">
+          <div className="bg-gray-900 rounded-[2.5rem] p-3 shadow-2xl max-w-[320px] mx-auto">
+            {/* Phone notch */}
+            <div className="bg-black rounded-[2rem] overflow-hidden relative">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-gray-900 rounded-b-2xl z-10"></div>
+
+              {/* Phone screen */}
+              <div className="bg-white h-[600px] overflow-y-auto">
+                {/* Chat Header */}
+                <div className="bg-purple-600 text-white px-4 py-3 flex items-center gap-3 sticky top-0 z-10">
+                  <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                    🤖
+                  </div>
+                  <div>
+                    <div className="font-semibold text-sm">Your Bot</div>
+                    <div className="text-xs opacity-90">● Online</div>
+                  </div>
+                </div>
+
+                {/* Messages */}
+                <div className="p-4 space-y-3">
+                  {previewMessages.length === 0 ? (
+                    <div className="text-center py-12">
+                      <div className="text-4xl mb-3">📱</div>
+                      <p className="text-gray-500 text-sm">No messages to preview</p>
+                      <p className="text-gray-400 text-xs mt-1">Add nodes and connect them</p>
+                    </div>
+                  ) : (
+                    previewMessages.map((msg, idx) => (
+                      <div key={idx}>
+                        {msg.type === 'system' && (
+                          <div className="flex items-center justify-center gap-2 my-4">
+                            <span className="text-lg">{msg.icon}</span>
+                            <span className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">{msg.text}</span>
+                          </div>
+                        )}
+                        {msg.type === 'bot' && (
+                          <div className="flex gap-2 items-start">
+                            <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                              🤖
+                            </div>
+                            <div className="flex-1">
+                              <div className="bg-gray-100 rounded-2xl rounded-tl-sm px-4 py-2 max-w-[85%]">
+                                <p className="text-sm text-gray-900">{msg.text}</p>
+                              </div>
+                              <p className="text-xs text-gray-400 mt-1">{msg.time}</p>
+                            </div>
+                          </div>
+                        )}
+                        {msg.type === 'user' && (
+                          <div className="flex gap-2 items-start justify-end">
+                            <div className="flex-1 flex justify-end">
+                              <div className="bg-purple-600 text-white rounded-2xl rounded-tr-sm px-4 py-2 max-w-[85%]">
+                                <p className="text-sm">{msg.text}</p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Test Controls */}
+          <div className="mt-4 flex gap-2">
+            <button
+              onClick={simulateFlow}
+              className="flex-1 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            >
+              🔄 Restart Flow
+            </button>
+            <button
+              onClick={onClose}
+              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function FlowBuilderPage() {
   const params = useParams();
   const router = useRouter();
@@ -994,6 +1154,7 @@ export default function FlowBuilderPage() {
   const [showProTips, setShowProTips] = useState(true);
   const [flowStatus, setFlowStatus] = useState<'draft' | 'active' | 'paused'>('draft');
   const [showFlowMenu, setShowFlowMenu] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
   // Connection line style state
   const [connectionLineType, setConnectionLineType] = useState<ConnectionLineType>(ConnectionLineType.SmoothStep);
@@ -1467,6 +1628,13 @@ export default function FlowBuilderPage() {
         onUpdate={updateNodeConfig}
       />
 
+      <FlowPreviewModal
+        isOpen={showPreview}
+        onClose={() => setShowPreview(false)}
+        nodes={nodes}
+        edges={edges}
+      />
+
       {/* Top Bar - ManyChat Style */}
       <div className="bg-white border-b border-gray-200 px-5 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -1519,7 +1687,7 @@ export default function FlowBuilderPage() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" className="gap-1 text-sm h-9 px-3">
+          <Button variant="outline" onClick={() => setShowPreview(true)} className="gap-1 text-sm h-9 px-3">
             <span>👁️</span> Preview
           </Button>
           <Button variant="outline" className="gap-1 text-sm h-9 px-3">
