@@ -86,6 +86,11 @@ export default function DashboardPage() {
               <p className="text-sm text-gray-500 mt-1">Welcome back! Here's what's happening today.</p>
             </div>
             <nav className="flex gap-2">
+              <Link href="/live">
+                <Button variant="outline" className="h-9 text-sm border-green-500 text-green-700 hover:bg-green-50">
+                  🔴 Live
+                </Button>
+              </Link>
               <Link href="/flows">
                 <Button className="bg-purple-600 hover:bg-purple-700 h-9 text-sm">
                   + New Flow
@@ -183,14 +188,14 @@ export default function DashboardPage() {
                   </button>
                 </Link>
 
-                <Link href="/inbox">
-                  <button className="w-full flex items-center gap-3 p-4 rounded-lg border-2 border-blue-200 hover:border-blue-400 hover:bg-blue-50 transition-all text-left">
-                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-lg">
-                      💬
+                <Link href="/live">
+                  <button className="w-full flex items-center gap-3 p-4 rounded-lg border-2 border-green-200 hover:border-green-400 hover:bg-green-50 transition-all text-left">
+                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center text-lg">
+                      🔴
                     </div>
                     <div>
-                      <div className="font-semibold text-gray-900 text-sm">Live Chat</div>
-                      <div className="text-xs text-gray-500">View conversations</div>
+                      <div className="font-semibold text-gray-900 text-sm">Live Activity</div>
+                      <div className="text-xs text-gray-500">Real-time updates</div>
                     </div>
                   </button>
                 </Link>
