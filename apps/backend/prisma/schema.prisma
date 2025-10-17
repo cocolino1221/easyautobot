@@ -285,9 +285,35 @@ model FlowExecution {
   startedAt  DateTime @default(now())
   completedAt DateTime?
 
+  // Relations
+  nodeExecutions FlowNodeExecution[]
+
   @@index([flowId])
   @@index([startedAt])
   @@map("flow_executions")
+}
+
+model FlowNodeExecution {
+  id              String        @id @default(uuid())
+  executionId     String
+  execution       FlowExecution @relation(fields: [executionId], references: [id], onDelete: Cascade)
+
+  nodeId          String
+  nodeType        String
+  status          String        // 'SUCCESS', 'FAILED', 'SKIPPED'
+
+  input           Json?
+  output          Json?
+  error           String?
+
+  startedAt       DateTime      @default(now())
+  completedAt     DateTime?
+  durationMs      Int?          // Time spent in milliseconds
+
+  @@index([executionId])
+  @@index([nodeId])
+  @@index([startedAt])
+  @@map("flow_node_executions")
 }
 
 model ApiKey {
