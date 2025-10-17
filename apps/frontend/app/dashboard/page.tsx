@@ -42,7 +42,13 @@ export default function DashboardPage() {
   const fetchStats = async () => {
     try {
       const response = await api.get('/api/v1/analytics/dashboard');
-      setStats(response.data);
+      // Validate response has expected structure
+      if (response.data && response.data.overview) {
+        setStats(response.data);
+      } else {
+        console.log('Invalid API response structure, using mock data');
+        setStats(mockStats);
+      }
     } catch (error) {
       console.error('Failed to fetch stats', error);
       // Use mock data if API fails
