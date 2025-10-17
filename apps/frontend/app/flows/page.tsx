@@ -270,46 +270,62 @@ export default function FlowsPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredFlows.map((flow) => (
-                <Link key={flow.id} href={`/flows/builder/${flow.id}`}>
-                  <div className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md hover:border-purple-300 transition-all cursor-pointer group">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-purple-700 transition-colors">
-                          {flow.name}
-                        </h3>
-                        <div className="flex items-center gap-2">
-                          {getStatusBadge(flow.status)}
+                <div key={flow.id} className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md hover:border-purple-300 transition-all group">
+                  <Link href={`/flows/builder/${flow.id}`}>
+                    <div className="cursor-pointer">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-purple-700 transition-colors">
+                            {flow.name}
+                          </h3>
+                          <div className="flex items-center gap-2">
+                            {getStatusBadge(flow.status)}
+                          </div>
+                        </div>
+                        <button className="text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                          ⋯
+                        </button>
+                      </div>
+
+                      <div className="flex items-center gap-1 mb-3">
+                        {flow.platforms.map((platform) => (
+                          <span key={platform} className="text-base" title={platform}>
+                            {getPlatformIcon(platform)}
+                          </span>
+                        ))}
+                      </div>
+
+                      <div className="space-y-2 text-xs text-gray-600">
+                        <div className="flex justify-between">
+                          <span>Messages sent:</span>
+                          <span className="font-medium text-gray-900">{flow.messagesSent.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Completion:</span>
+                          <span className="font-medium text-gray-900">{flow.completionRate}%</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Last edited:</span>
+                          <span className="font-medium text-gray-900">{flow.lastEdited}</span>
                         </div>
                       </div>
-                      <button className="text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                        ⋯
-                      </button>
                     </div>
+                  </Link>
 
-                    <div className="flex items-center gap-1 mb-3">
-                      {flow.platforms.map((platform) => (
-                        <span key={platform} className="text-base" title={platform}>
-                          {getPlatformIcon(platform)}
-                        </span>
-                      ))}
-                    </div>
-
-                    <div className="space-y-2 text-xs text-gray-600">
-                      <div className="flex justify-between">
-                        <span>Messages sent:</span>
-                        <span className="font-medium text-gray-900">{flow.messagesSent.toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Completion:</span>
-                        <span className="font-medium text-gray-900">{flow.completionRate}%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Last edited:</span>
-                        <span className="font-medium text-gray-900">{flow.lastEdited}</span>
-                      </div>
-                    </div>
+                  {/* Quick Actions - visible on hover */}
+                  <div className="mt-3 pt-3 border-t border-gray-100 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Link href={`/flows/builder/${flow.id}`} className="flex-1">
+                      <Button variant="outline" size="sm" className="w-full text-xs">
+                        ✏️ Edit
+                      </Button>
+                    </Link>
+                    <Link href={`/flows/analytics/${flow.id}`} className="flex-1">
+                      <Button variant="outline" size="sm" className="w-full text-xs">
+                        📊 Analytics
+                      </Button>
+                    </Link>
                   </div>
-                </Link>
+                </div>
               ))}
             </div>
           )}

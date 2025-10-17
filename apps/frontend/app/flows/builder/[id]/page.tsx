@@ -1759,9 +1759,11 @@ export default function FlowBuilderPage() {
           <Button variant="outline" onClick={() => setShowPreview(true)} className="gap-1 text-sm h-9 px-3">
             <span>👁️</span> Preview
           </Button>
-          <Button variant="outline" className="gap-1 text-sm h-9 px-3">
-            <span>📊</span> Stats
-          </Button>
+          <Link href={`/flows/analytics/${params.id}`}>
+            <Button variant="outline" className="gap-1 text-sm h-9 px-3">
+              <span>📊</span> Analytics
+            </Button>
+          </Link>
           <Button variant="outline" className="gap-1 text-sm h-9 px-3">
             <span>⚙️</span> Settings
           </Button>
