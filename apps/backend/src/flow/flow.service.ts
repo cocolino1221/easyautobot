@@ -104,35 +104,85 @@ export class FlowService {
       );
     }
 
-    // Execute the flow starting from trigger
-    const context = {
-      triggerData,
-      tenantId,
-      flowId,
-      variables: {},
-    };
-
-    const result = await this.executeNode(
-      triggerNode,
-      nodes,
-      edges,
-      context,
-    );
-
-    // Log execution
-    await this.prisma.flow.update({
-      where: { id: flowId },
+    // Create FlowExecution record
+    const execution = await this.prisma.flowExecution.create({
       data: {
-        totalRuns: { increment: 1 },
-        successfulRuns: { increment: 1 },
+        flowId,
+        status: 'STARTED',
+        input: triggerData,
       },
     });
 
-    return {
-      success: true,
-      flowId,
-      result,
-    };
+    let executionStatus = 'COMPLETED';
+    let executionError: string | null = null;
+
+    try {
+      // Execute the flow starting from trigger
+      const context = {
+        triggerData,
+        tenantId,
+        flowId,
+        executionId: execution.id,
+        variables: {},
+      };
+
+      const result = await this.executeNode(
+        triggerNode,
+        nodes,
+        edges,
+        context,
+      );
+
+      // Update execution with result
+      await this.prisma.flowExecution.update({
+        where: { id: execution.id },
+        data: {
+          status: 'COMPLETED',
+          output: result,
+          completedAt: new Date(),
+        },
+      });
+
+      // Log execution success
+      await this.prisma.flow.update({
+        where: { id: flowId },
+        data: {
+          totalRuns: { increment: 1 },
+          successfulRuns: { increment: 1 },
+        },
+      });
+
+      return {
+        success: true,
+        flowId,
+        executionId: execution.id,
+        result,
+      };
+    } catch (error) {
+      executionStatus = 'FAILED';
+      executionError = error.message || 'Unknown error';
+
+      // Update execution with error
+      await this.prisma.flowExecution.update({
+        where: { id: execution.id },
+        data: {
+          status: 'FAILED',
+          error: executionError,
+          completedAt: new Date(),
+        },
+      });
+
+      // Log execution failure
+      await this.prisma.flow.update({
+        where: { id: flowId },
+        data: {
+          totalRuns: { increment: 1 },
+          failedRuns: { increment: 1 },
+        },
+      });
+
+      throw error;
+    }
   }
 
   /**
@@ -146,27 +196,59 @@ export class FlowService {
   ): Promise<any> {
     console.log(`Executing node: ${node.id} (${node.type})`);
 
+    const startTime = Date.now();
     let result: any = null;
+    let nodeStatus = 'SUCCESS';
+    let nodeError: string | null = null;
 
-    switch (node.type) {
-      case 'trigger':
-        result = context.triggerData;
-        break;
+    try {
+      switch (node.type) {
+        case 'trigger':
+          result = context.triggerData;
+          break;
 
-      case 'action':
-        result = await this.executeAction(node, context);
-        break;
+        case 'action':
+          result = await this.executeAction(node, context);
+          break;
 
-      case 'condition':
-        result = await this.evaluateCondition(node, context);
-        break;
+        case 'condition':
+          result = await this.evaluateCondition(node, context);
+          break;
 
-      case 'delay':
-        result = await this.executeDelay(node);
-        break;
+        case 'delay':
+          result = await this.executeDelay(node);
+          break;
 
-      default:
-        console.warn(`Unknown node type: ${node.type}`);
+        default:
+          console.warn(`Unknown node type: ${node.type}`);
+          nodeStatus = 'SKIPPED';
+      }
+    } catch (error) {
+      nodeStatus = 'FAILED';
+      nodeError = error.message || 'Unknown error';
+      console.error(`Node execution failed: ${node.id}`, error);
+    }
+
+    const durationMs = Date.now() - startTime;
+
+    // Track node execution for analytics
+    await this.prisma.flowNodeExecution.create({
+      data: {
+        executionId: context.executionId,
+        nodeId: node.id,
+        nodeType: node.type,
+        status: nodeStatus,
+        input: node.data || {},
+        output: result,
+        error: nodeError,
+        durationMs,
+        completedAt: new Date(),
+      },
+    });
+
+    // If node failed, don't continue execution
+    if (nodeStatus === 'FAILED') {
+      throw new Error(`Node ${node.id} failed: ${nodeError}`);
     }
 
     // Find next nodes connected to this one
