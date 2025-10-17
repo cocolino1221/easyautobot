@@ -206,15 +206,17 @@ export default function DashboardPage() {
                   </button>
                 </Link>
 
-                <button className="w-full flex items-center gap-3 p-4 rounded-lg border-2 border-green-200 hover:border-green-400 hover:bg-green-50 transition-all text-left">
-                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center text-lg">
-                    📣
-                  </div>
-                  <div>
-                    <div className="font-semibold text-gray-900 text-sm">Broadcast</div>
-                    <div className="text-xs text-gray-500">Send to all</div>
-                  </div>
-                </button>
+                <Link href="/broadcast">
+                  <button className="w-full flex items-center gap-3 p-4 rounded-lg border-2 border-orange-200 hover:border-orange-400 hover:bg-orange-50 transition-all text-left">
+                    <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center text-lg">
+                      📣
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-900 text-sm">Broadcast</div>
+                      <div className="text-xs text-gray-500">Send to all</div>
+                    </div>
+                  </button>
+                </Link>
 
                 <Link href="/flows">
                   <button className="w-full flex items-center gap-3 p-4 rounded-lg border-2 border-orange-200 hover:border-orange-400 hover:bg-orange-50 transition-all text-left">
