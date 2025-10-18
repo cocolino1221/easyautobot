@@ -160,7 +160,7 @@ export class FlowService {
       };
     } catch (error) {
       executionStatus = 'FAILED';
-      executionError = error.message || 'Unknown error';
+      executionError = error instanceof Error ? error.message : 'Unknown error';
 
       // Update execution with error
       await this.prisma.flowExecution.update({
@@ -225,7 +225,7 @@ export class FlowService {
       }
     } catch (error) {
       nodeStatus = 'FAILED';
-      nodeError = error.message || 'Unknown error';
+      nodeError = error instanceof Error ? error.message : 'Unknown error';
       console.error(`Node execution failed: ${node.id}`, error);
     }
 
